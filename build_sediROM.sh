@@ -99,6 +99,8 @@ case "$BUILDJAV" in
         exit 3
         ;;
 esac
+echo 
+echo "Switching to $NEEDEDJAVA..."
 sudo update-java-alternatives -s $NEEDEDJAVA
 echo ... done
 
