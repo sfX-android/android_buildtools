@@ -86,7 +86,7 @@ case "$BUILDJAV" in
         NEEDEDJAVA=java-7-oracle
 	BUILDEXEC="make -j${MAXCPU}"
         ;;
-        cm_ics)
+        cm_ics|cm_jb)
 	NEEDEDJAVA=java-6-oracle
 	BUILDEXEC="mka"
         ;;
