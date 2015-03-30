@@ -18,6 +18,7 @@ F_HELP(){
 	echo
 	echo "$0 needs one of:" 
 	echo "	systemimage|userdataimage|otapackage|bootimage|recovery|mr_twrp|multirom|trampoline|multirom_zip|free|showtargets"
+	echo "	kernelonly"
 	echo 
 	echo "	e.g.: $0 otapackage"
 	echo 
@@ -173,6 +174,29 @@ case $1 in
 		read "LOKITYPE"
 		[ -z "$LOKITYPE" ]&& LOKIOK=1
 		echo "***********************************************************"
+	;;
+        kernelonly)
+		echo $1 choosen
+                cd kernel/$BUILDID/
+		echo "changed work directory to kernel/$BUILDID/"
+		mkdir -p out
+                while [ -z "$KCONF" ]||[ ! -r arch/arm/configs/$KCONF ];do
+			echo "config invalid or not defined!"
+			echo "Please enter your kernel defconfig filename:"
+			read "KCONF"
+		done
+		export ARCH=arm
+		export TARGET_PRODUCT=$KCONF
+                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-"
+                make O=./out ARCH=arm $KCONF && make O=./out -j8 \
+		    && cp out/arch/arm/boot/zImage ../../../device/$BUILDID/kernel-new \
+		    && md5sum out/arch/arm/boot/zImage ../../../device/$BUILDID/kernel-new \
+                    && echo "All done successful!"
+		cd ../../../
+		echo "changed work directory back to root"
+		LOKIOK=1
+		echo LOKI disabled because of your above choice
+		exit
 	;;
 	*)
 		F_HELP
