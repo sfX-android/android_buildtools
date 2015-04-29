@@ -218,10 +218,12 @@ if [ ! -z "$sec" ];then
 		clean)
 			echo will $sec before
 			make $sec
+			[ -d kernel/$BUILDID/out ]&& rm -R kernel/$BUILDID/out
 		;;
 		installclean)
 			echo will $sec before
 			make $sec
+			[ -d kernel/$BUILDID/out ]&& rm -R kernel/$BUILDID/out
 		;;
 		*)
 			echo unknown clean arg aborted
