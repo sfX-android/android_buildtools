@@ -92,7 +92,8 @@ case "$BUILDJAV" in
 	BUILDEXEC="mka"
         ;;
         cm_kk)
-        NEEDEDJAVA=java-7-oracle
+        #NEEDEDJAVA=java-7-oracle
+	NEEDEDJAVA=java-7-openjdk-amd64
 	BUILDEXEC="mka"
         ;;
         *)
@@ -125,6 +126,8 @@ if [ $LOKIFY ];then
 else
 	echo "Will not doing lokify because LOKIFY is not set."
 fi
+
+sec=$2
 
 # check the targets
 case $1 in
@@ -195,8 +198,14 @@ case $1 in
 		cd ../../../
 		echo "changed work directory back to root"
 		LOKIOK=1
-		echo LOKI disabled because of your above choice
+		echo LOKI disabled because of kernelonly
 		exit
+	;;
+	clean|installclean)
+		echo will do $1 only..
+		make $1
+		[ -d kernel/$BUILDID/out ]&& rm -R kernel/$BUILDID/out
+		exit 2
 	;;
 	*)
 		F_HELP
@@ -204,15 +213,15 @@ case $1 in
 	;;
 esac
 
-if [ ! -z "$2" ];then
-	case $2 in
+if [ ! -z "$sec" ];then
+	case $sec in
 		clean)
-			echo will $2 before
-			make $2
+			echo will $sec before
+			make $sec
 		;;
 		installclean)
-			echo will $2 before
-			make $2
+			echo will $sec before
+			make $sec
 		;;
 		*)
 			echo unknown clean arg aborted
