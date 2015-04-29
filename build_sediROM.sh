@@ -72,28 +72,36 @@ fi
 BUILDWHAT=$(egrep "^add_lunch_combo" device/$BUILDID/vendorsetup.sh |cut -d" " -f2)
 
 # choose the right java JDK
-echo ... enabling correct java version depending on which Android version you want to build..
+# you need to have installed: openjdk-7-jdk for java1.7 and openjdk-6-jdk for v1.6
+echo enabling correct java version depending on which Android version you want to build..
 BUILDJAV=$(echo ${PWD##*/})
 case "$BUILDJAV" in
         aosp_ics)
-        NEEDEDJAVA=java-6-oracle
+        #NEEDEDJAVA=java-6-oracle
+        NEEDEDJAVA=java-1.6.0-openjdk-amd64
+        JAVACBIN=/usr/lib/jvm/java-6-openjdk-amd64/bin/javac
 	BUILDEXEC="make -j${MAXCPU}"
 	;;
         aosp_jb)
         NEEDEDJAVA=java-1.6.0-openjdk-amd64
+	JAVACBIN=/usr/lib/jvm/java-6-openjdk-amd64/bin/javac
 	BUILDEXEC="make -j${MAXCPU}"
         ;;
         aosp_kk)
-        NEEDEDJAVA=java-7-oracle
+        #NEEDEDJAVA=java-7-oracle
+        NEEDEDJAVA=java-1.7.0-openjdk-amd64
+        JAVACBIN=/usr/lib/jvm/java-7-openjdk-amd64/bin/javac
 	BUILDEXEC="make -j${MAXCPU}"
         ;;
         cm_ics|cm_jb)
 	NEEDEDJAVA=java-6-oracle
+        JAVACBIN=/usr/lib/jvm/$NEEDEDJAVA/bin/javac
 	BUILDEXEC="mka"
         ;;
         cm_kk)
         #NEEDEDJAVA=java-7-oracle
-	NEEDEDJAVA=java-7-openjdk-amd64
+	NEEDEDJAVA=java-1.7.0-openjdk-amd64
+	JAVACBIN=/usr/lib/jvm/java-7-openjdk-amd64/bin/javac
 	BUILDEXEC="mka"
         ;;
         *)
@@ -101,10 +109,27 @@ case "$BUILDJAV" in
         exit 3
         ;;
 esac
-echo 
-echo "Switching to $NEEDEDJAVA..."
-sudo update-java-alternatives -s $NEEDEDJAVA
-echo ... done
+echo "... checking if we need to switch Java version" 
+CURRENTJ=$(java -version 2>&1|grep version)
+NEWJBIN=$(/usr/lib/jvm/$NEEDEDJAVA/bin/java -version 2>&1|grep version)
+if [ "x$CURRENTJ" == "x$NEWJBIN" ];then
+	echo "... skipping java switch because we already have the wanted version ($CURRENTJ == $NEWJBIN)"
+else
+	echo "($CURRENTJ vs. $NEWJBIN)"
+	echo "... switching to $NEEDEDJAVA..."
+	sudo update-java-alternatives -v -s $NEEDEDJAVA
+fi
+
+CURRENTC=$(javac -version 2>&1) 
+NEWJCBIN=$($JAVACBIN -version 2>&1)
+if [ "x$CURRENTC" == "x$NEWJCBIN" ];then
+	echo "... skipping javaC switch because we already have the wanted version ($CURRENTC == $NEWJCBIN)"
+else
+	echo "($CURRENTC vs. $NEWJCBIN)"
+	echo "... switching to $JAVACBIN..."
+	sudo update-alternatives --set javac $JAVACBIN
+fi
+echo "DONE (Java)"
 
 if [ $LOKIFY ];then
 
