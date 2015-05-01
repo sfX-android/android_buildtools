@@ -263,7 +263,7 @@ BUILDEND=$?
 
 echo "... BUILD ended with errorlevel = $BUILDEND"
 
-if [ $LOKIFY -eq 0 ] && [ $LOKIOK -eq 0 ]&&[ $BUILDEND -eq 0 ];then
+if [ $LOKIFY -eq 1 ] && [ $LOKIOK -eq 0 ]&&[ $BUILDEND -eq 0 ];then
 	echo "Lokifying ($LOKINEED as $LOKITYPE)..."
 	$LOKI patch $LOKITYPE $ABOOT out/target/product/fx3q/$LOKINEED out/target/product/fx3q/${LOKINEED}.lokied
 else
