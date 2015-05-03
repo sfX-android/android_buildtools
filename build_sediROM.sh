@@ -216,7 +216,7 @@ case $1 in
 		export ARCH=arm
 		export TARGET_PRODUCT=$KCONF
                 export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-"
-                make O=./out ARCH=arm $KCONF && make O=./out -j8 \
+                make O=./out ARCH=arm $KCONF && make O=./out -j$MAXCPU \
 		    && cp out/arch/arm/boot/zImage ../../../device/$BUILDID/kernel-new \
 		    && md5sum out/arch/arm/boot/zImage ../../../device/$BUILDID/kernel-new \
                     && echo "All done successful!"
