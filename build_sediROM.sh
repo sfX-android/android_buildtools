@@ -99,9 +99,10 @@ case "$BUILDJAV" in
 	BUILDEXEC="mka"
         ;;
         cm_kk)
-        #NEEDEDJAVA=java-7-oracle
-	NEEDEDJAVA=java-1.7.0-openjdk-amd64
-	JAVACBIN=/usr/lib/jvm/java-7-openjdk-amd64/bin/javac
+        NEEDEDJAVA=java-7-oracle
+	JAVACBIN=/usr/lib/jvm/$NEEDEDJAVA/bin/javac
+	#NEEDEDJAVA=java-1.7.0-openjdk-amd64
+	#JAVACBIN=/usr/lib/jvm/java-7-openjdk-amd64/bin/javac
 	BUILDEXEC="mka"
         ;;
         *)
@@ -213,13 +214,25 @@ case $1 in
 			echo "Please enter your kernel defconfig filename:"
 			read "KCONF"
 		done
+		CCPATH="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-"
+                while [ -z "$CCUSER" ]||[ ! -d ${CCPATH}${CCUSER} ];do
+                        echo "cross compile path invalid or not defined!"
+                        echo "Please enter the toolchain version number (only that. e.g. 4.4.3 or 4.7):"
+                        read "CCUSER"
+                done
 		export ARCH=arm
-		export TARGET_PRODUCT=$KCONF
-                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-"
+		export TARGET_PRODUCT=${BUILDID#*/}_xdajog
+		export TARGET_KERNEL_CONFIG=$KCONF
+		export CROSS_COMPILE="${CCPATH}${CCUSER}"
+#                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.4.3/bin/arm-eabi-"
+#                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-"
+#                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.7/bin/arm-eabi-"
+#                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.9/bin/arm-eabi-"
                 make O=./out ARCH=arm $KCONF && make O=./out -j$MAXCPU \
 		    && cp out/arch/arm/boot/zImage ../../../device/$BUILDID/kernel-new \
 		    && md5sum out/arch/arm/boot/zImage ../../../device/$BUILDID/kernel-new \
                     && echo "All done successful!"
+		echo TARGET_PRODUCT was $TARGET_PRODUCT
 		cd ../../../
 		echo "changed work directory back to root"
 		LOKIOK=1
