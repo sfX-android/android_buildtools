@@ -132,7 +132,7 @@ else
 fi
 echo "DONE (Java)"
 
-if [ $LOKIFY ];then
+if [ x"$LOKIFY" == "x1" ];then
 
 	# Loki specific
 	LOKI="/home/xdajog/loki_tool"	# the loki patch binary
