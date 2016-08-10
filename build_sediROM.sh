@@ -219,44 +219,132 @@ case $1 in
 		echo "***********************************************************"
 	;;
         kernelonly)
-		echo $1 choosen
-                cd kernel/$BUILDID/
-		echo "changed work directory to kernel/$BUILDID/"
-		mkdir -p out
-                while [ -z "$KCONF" ]||[ ! -r arch/arm/configs/$KCONF ];do
-			echo "config invalid or not defined!"
-			echo "Please enter your kernel defconfig filename:"
+		OUTDIR=./out
+		CDIR=$(pwd)
+		KARG="undef"
+
+		echo "$1 with arg: $2 choosen"
+		KARG="$2"
+
+		while [ -z "$UARCH" ];do
+		    read -p "No UARCH variable given so which architecture (x86 | x64)?" UARCH
+		done
+
+		[ _"$UARCH" == "_x64" ]&& RARCH=arm64
+		[ _"$UARCH" == "_x86" ]&& RARCH=arm
+		[ -z "$RARCH" ]&& echo -e "\n\nERROR: no valid arch defined!! x64 or x86 are the only valid\n\n" && exit 3
+		
+		[ -z "$KDIR" ] && KDIR="kernel/$BUILDID/"
+                test -d $KDIR
+		END=$?
+		while [ $END -ne 0 ];do
+		    test -d $KDIR
+		    if [ $? -ne 0 ];then
+			echo "expected kernel source $KDIR does not exists please enter the correct one:"
+			read -p "kernel source dir> " KDIR
+			test -d $KDIR
+			END=$?
+		    fi
+		done
+		cd $KDIR && echo "changed work directory to $KDIR"
+		# check optional given args
+		case "$KARG" in
+			clean|mrproper)
+			echo "CLEANING before make!"
+			make mrproper
+			make clean
+			rm -Rf $OUTDIR
+			mkdir -p $OUTDIR
+			;;
+			" "|""|undef)
+			echo "No args given so no cleanup before doing the work.."
+			;;
+			*)
+			echo 
+			read -p "The given arg(s) $KARG will be IGNORED as those are not valid! Press ENTER to continue." DUMMY
+			;;
+		esac
+		mkdir -p $OUTDIR
+		
+      	        while [ -z "$KCONF" ]||[ ! -r arch/$RARCH/configs/$KCONF ];do
+			echo "config $KCONF invalid or not defined!"
+			ls -la arch/$RARCH/configs/$KCONF
+			echo "No KCONF given so please enter your kernel defconfig filename:"
 			read "KCONF"
 		done
-		CCPATH="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-"
-                while [ -z "$CCUSER" ]||[ ! -d ${CCPATH}${CCUSER} ];do
+
+		if [ "$RARCH" == "arm64" ];then
+			# Toolchain UBER 4.9 !
+			# TODO: make the TC selectable..
+			CCPATH="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/aarch64-linux-android-4.9-kernel/bin"
+			CCPREFIX="aarch64-linux-android-"
+        	        TC="UBER4.9"
+		else
+		    if [ "$RARCH" == "arm" ];then
+                        # TODO: make the TC selectable..
+                        CCPATH="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm"
+			CCPREFIX="arm-eabi-"
+		    else
+			echo -e "\n\nERROR: no valid ARCH defined! Restart and choose either x86 or x64!!\n\n"
+			exit 3
+		    fi
+		fi
+                while [ ! -d ${CCPATH} ];do
                         echo "cross compile path invalid or not defined!"
-                        echo "Please enter the toolchain version number (only that. e.g. 4.4.3 or 4.7):"
-                        read "CCUSER"
+			echo "CCPATH: $CCPATH"
+                        echo "Please enter the toolchain path"
+                        read -p "(FULL path required!) " CCPATH
                 done
-		export ARCH=arm
+		# where the kernel resists
+		ZIMAGE_DIR=$OUTDIR/arch/$RARCH/boot/
+
+		export ARCH=$RARCH
 		export TARGET_PRODUCT=${BUILDID#*/}_xdajog
 		export TARGET_KERNEL_CONFIG=$KCONF
-		export CROSS_COMPILE="${CCPATH}${CCUSER}"
-#                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.4.3/bin/arm-eabi-"
-#                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-"
-#                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.7/bin/arm-eabi-"
-#                export CROSS_COMPILE="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.9/bin/arm-eabi-"
-                make O=./out ARCH=arm $KCONF && make O=./out -j$MAXCPU \
-		    && cp out/arch/arm/boot/zImage ../../../device/$BUILDID/kernel-new \
-		    && md5sum out/arch/arm/boot/zImage ../../../device/$BUILDID/kernel-new \
-                    && echo "All done successful!"
+		export CROSS_COMPILE="${CCPATH}/${CCPREFIX}"
+		export KCONF=$KCONF
+
+		# build kernel device tree 
+		# Need to have KDTB set with the main call!
+		if [ ! -z "KDTB" ];then	
+                	MBTOOLS="$HOME/android/$BUILDJAV/prebuilts/devtools/mkbootimg_tools"
+			DTBIMAGE="dtb"
+			KERNOUT=$OUTDIR/kernel
+			DTDIR="$CDIR/device/$BUILDID"
+			mkdir -p $KERNOUT
+
+			make O="$OUTDIR" $KCONF && echo "makefile done. now starting the machines... " \
+				&& make O="$OUTDIR" -j$MAXCPU \
+				&& echo "make completed successfully! Now copying the kernel to your device tree folder" \
+				&& cp -v $ZIMAGE_DIR/Image.gz-dtb $DTDIR/zImage-new \
+				&& echo "Now starting DTB creation" \
+				&& $MBTOOLS/dtbToolCM -2 -o $KERNOUT/$DTBIMAGE -s 2048 -p $OUTDIR/scripts/dtc/ $OUTDIR/arch/arm64/boot/dts/ \
+                		&& cp -v $KERNOUT/$DTBIMAGE $DTDIR/dtb.img-new \
+				&& md5sum $KERNOUT/$DTBIMAGE $DTDIR/dtb.img-new $ZIMAGE_DIR/Image.gz-dtb $DTDIR/zImage-new \
+				&& echo -e "\nAll done successfull!!\n\n\t--> KERNEL:\t$DTDIR/zImage-new\n\t--> DTB:\t$DTDIR/dtb.img-new\n\n"
+		else
+	                make O="$OUTDIR" $KCONF && echo "makefile done. now starting the machines... " \
+       		             	&& make O="$OUTDIR" -j$MAXCPU zImage \
+       		             	&& echo "make completed successfully! Now copying the kernel to your device tree folder" \
+			    	&& cp $ZIMAGE_DIR/zImage $DTDIR/kernel-new \
+			    	&& md5sum $ZIMAGE_DIR/zImage $DTDIR/kernel-new \
+                    		&& echo "All done successfull!!"
+
+		fi
+		
 		echo TARGET_PRODUCT was $TARGET_PRODUCT
-		cd ../../../
+		cd $CDIR
 		echo "changed work directory back to root"
 		LOKIOK=1
 		echo LOKI disabled because of kernelonly
+
 		exit
 	;;
-	clean|installclean)
+	clean|installclean)	
 		echo will do $1 only..
 		make $1
 		[ -d kernel/$BUILDID/out ]&& rm -R kernel/$BUILDID/out
+		[ -d $KDIR/out ]&& rm -R $KDIR/out 
 		exit 2
 	;;
 	*)
