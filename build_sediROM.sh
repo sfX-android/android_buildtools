@@ -114,6 +114,11 @@ case "$BUILDJAV" in
 	#JAVACBIN=/usr/lib/jvm/java-7-openjdk-amd64/bin/javac
 	BUILDEXEC="mka"
         ;;
+	mm_*|ll_*)
+        NEEDEDJAVA=java-7-oracle
+        JAVACBIN=/usr/lib/jvm/$NEEDEDJAVA/bin/javac
+        BUILDEXEC="mka"
+        ;;
         *)
         echo "cannot determine correct Java version! ABORTED"
         exit 3
