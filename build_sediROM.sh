@@ -35,6 +35,10 @@ F_HELP(){
 	echo "	BUILDID		if you call 'BUILDID=samsung/i927 $0' you will skip that question"
 	echo "	LOKIFY		if you set this to 1 we will lokify at the end"
 	echo
+	echo "Kernelonly variables:"
+	echo "	KDIR		if set it overwrites the default kernel dir (kernel/$BUILDID)"
+	echo "	KCONF		the kernel defconfig filename - will prompt if not set"
+	echo
 }
 # check if we have at least 1 arg:
 [ -z $1 ]&& echo -e "MISSING ARG. \n\n" && F_HELP && exit 3
@@ -62,6 +66,11 @@ if [ -z $BUILDID ];then
     echo "lge/fx3q --> will look into device/lge/fx3q/"
     echo "or"
     echo "samsung/i927 --> will look into device/samsung/i927"
+    echo "or"
+    echo "lge/h815 --> will look into device/lge/h815"
+    echo "and so on...!"
+    echo
+    echo "you can skip this step by providing BUILDID - see help"
     echo "******************************************************************************************************"
     echo
     echo "Ok now give me your build id:"
@@ -196,7 +205,7 @@ case $1 in
 	free)
 		echo "***********************************************************"
 		echo "Enter your build choice (will NOT be verified!)"
-		echo "Can be multiple one separated by space:"
+		echo "Can be multiple choices - separated by space:"
 		read BARG
 		BUILDEXEC="$BUILDEXEC $BARG"
 		echo "Do you want to LOKI? If so enter the Loki Type (recovery|boot) otherwise ENTER:"
