@@ -306,7 +306,7 @@ case $1 in
 
 		# build kernel device tree 
 		# Need to have KDTB set with the main call!
-		if [ ! -z "KDTB" ];then	
+		if [ "$RARCH" == "arm64" ];then	
                 	MBTOOLS="$HOME/android/$BUILDJAV/prebuilts/devtools/mkbootimg_tools"
 			DTBIMAGE="dtb"
 			KERNOUT=$OUTDIR/kernel
@@ -316,12 +316,12 @@ case $1 in
 			make O="$OUTDIR" $KCONF && echo "makefile done. now starting the machines... " \
 				&& make O="$OUTDIR" -j$MAXCPU \
 				&& echo "make completed successfully! Now copying the kernel to your device tree folder" \
-				&& cp -v $ZIMAGE_DIR/Image.gz-dtb $DTDIR/zImage-new \
+				&& cp -v $ZIMAGE_DIR/Image.gz-dtb $DTDIR/Image.gz-dtb.new \
 				&& echo "Now starting DTB creation" \
-				&& $MBTOOLS/dtbToolCM -2 -o $KERNOUT/$DTBIMAGE -s 2048 -p $OUTDIR/scripts/dtc/ $OUTDIR/arch/arm64/boot/dts/ \
+				&& $MBTOOLS/dtbToolCM -2 -o $KERNOUT/$DTBIMAGE -s 2048 -p $OUTDIR/scripts/dtc/ $OUTDIR/arch/$RARCH/boot/dts/ \
                 		&& cp -v $KERNOUT/$DTBIMAGE $DTDIR/dtb.img-new \
-				&& md5sum $KERNOUT/$DTBIMAGE $DTDIR/dtb.img-new $ZIMAGE_DIR/Image.gz-dtb $DTDIR/zImage-new \
-				&& echo -e "\nAll done successfull!!\n\n\t--> KERNEL:\t$DTDIR/zImage-new\n\t--> DTB:\t$DTDIR/dtb.img-new\n\n"
+				&& md5sum $KERNOUT/$DTBIMAGE $DTDIR/dtb.img-new $ZIMAGE_DIR/Image.gz-dtb $DTDIR/Image.gz-dtb.new \
+				&& echo -e "\nAll done successfull!!\n\n\t--> KERNEL:\t$DTDIR/Image.gz-dtb.new\n\t--> DTB:\t$DTDIR/dtb.img-new\n\n"
 		else
 	                make O="$OUTDIR" $KCONF && echo "makefile done. now starting the machines... " \
        		             	&& make O="$OUTDIR" -j$MAXCPU zImage \
