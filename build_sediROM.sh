@@ -328,9 +328,9 @@ case $1 in
 	                make O="$OUTDIR" $KCONF && echo "makefile done. now starting the machines... " \
        		             	&& make O="$OUTDIR" -j$MAXCPU zImage \
        		             	&& echo "make completed successfully! Now copying the kernel to your device tree folder" \
-			    	&& cp $ZIMAGE_DIR/zImage $DTDIR/kernel-new \
-			    	&& md5sum $ZIMAGE_DIR/zImage $DTDIR/kernel-new \
-                    		&& echo "All done successfull!!"
+			    	&& cp $ZIMAGE_DIR/zImage $DTDIR/zImage.new \
+			    	&& md5sum $ZIMAGE_DIR/zImage $DTDIR/zImage.new \
+                    		&& echo -e "\nAll done successfull!!\n\n\t--> KERNEL:\t$DTDIR/zImage.new\n"
 
 		fi
 		
