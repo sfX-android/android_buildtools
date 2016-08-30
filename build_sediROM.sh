@@ -165,6 +165,8 @@ if [ x"$LOKIFY" == "x1" ];then
 	fi
 else
 	echo "Will not doing lokify because LOKIFY is not set."
+    LOKIFY=0
+    LOKIOK=0
 fi
 
 sec=$2
