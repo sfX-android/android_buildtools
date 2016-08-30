@@ -307,13 +307,14 @@ case $1 in
 		export KCONF=$KCONF
 
 		# build kernel device tree 
+                MBTOOLS="$HOME/android/$BUILDJAV/prebuilts/devtools/mkbootimg_tools"
+		KERNOUT=$OUTDIR/kernel
+		DTDIR="$CDIR/device/$BUILDID"
+		mkdir -p $KERNOUT
+		
 		# Need to have KDTB set with the main call!
 		if [ "$RARCH" == "arm64" ];then	
-                	MBTOOLS="$HOME/android/$BUILDJAV/prebuilts/devtools/mkbootimg_tools"
 			DTBIMAGE="dtb"
-			KERNOUT=$OUTDIR/kernel
-			DTDIR="$CDIR/device/$BUILDID"
-			mkdir -p $KERNOUT
 
 			make O="$OUTDIR" $KCONF && echo "makefile done. now starting the machines... " \
 				&& make O="$OUTDIR" -j$MAXCPU \
