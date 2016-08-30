@@ -276,13 +276,15 @@ case $1 in
 		if [ "$RARCH" == "arm64" ];then
 			# Toolchain UBER 4.9 !
 			# TODO: make the TC selectable..
-			CCPATH="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/aarch64-linux-android-4.9-kernel/bin"
+			#CCPATH="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/aarch64-linux-android-4.9-kernel/bin"
+			#CCPREFIX="aarch64-linux-android-"
+			CCPATH="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin"
 			CCPREFIX="aarch64-linux-android-"
         	        TC="UBER4.9"
 		else
 		    if [ "$RARCH" == "arm" ];then
                         # TODO: make the TC selectable..
-                        CCPATH="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm"
+                        CCPATH="$HOME/android/$BUILDJAV/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin"
 			CCPREFIX="arm-eabi-"
 		    else
 			echo -e "\n\nERROR: no valid ARCH defined! Restart and choose either x86 or x64!!\n\n"
