@@ -30,10 +30,11 @@ VERSION=20161124
 ###############################################################################################################
 
 BAKNAME=benchmarktest
+LOG=${0/.sh/.log}
 
 echo "Starting $0 - $VERSION"
 
-[ -z "$1" ] &&echo "aborted! Missng args" && exit
+[ -z "$1" ] &&echo "aborted! Missing args" && exit
 
 while [ ! -z "$1" ] ;do
     case "$1" in 
@@ -54,29 +55,34 @@ while [ ! -z "$1" ] ;do
         shift 2
         ;;
         *)
-        echo "ERROR unknown aarg <$1>"
+        echo "ERROR unknown arg <$1>"
         exit
         ;;
     esac
 done
 
 # ensure we use the external storage
-adb shell "twrp set tw_storage_path /external_sd"
+adb shell "twrp set tw_storage_path /external_sd" >> $LOG
+[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
 
 # ensure we have no old backups in place
-adb shell "rm -vRf /external_sd/TWRP/BACKUPS/*/$BAKNAME/; rm -vRf /sdcard/TWRP/BACKUPS/*/$BAKNAME/"
+adb shell "rm -vRf /external_sd/TWRP/BACKUPS/*/$BAKNAME/; rm -vRf /sdcard/TWRP/BACKUPS/*/$BAKNAME/" >> $LOG
+[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
 
 # set cpu governor
-adb shell "for i in \$(find /sys/devices/ -type f -name scaling_governor);do echo $CGOV > \$i;cat \$i;done"
+adb shell "for i in \$(find /sys/devices/ -type f -name scaling_governor);do echo $CGOV > \$i;cat \$i;done" >> $LOG
+[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
 
 # set IO scheduler
-adb shell "for a in \$(find /sys/devices/soc.0/ -type f -name scheduler|grep mmc);do echo $ISCH > \$a; cat \$a;done"
+adb shell "for a in \$(find /sys/devices/soc.0/ -type f -name scheduler|grep mmc);do echo $ISCH > \$a; cat \$a;done" >> $LOG
+[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
 
 # set readahead
 for b in /sys/devices/virtual/bdi/179\\:0/read_ahead_kb /sys/devices/virtual/bdi/254\\:0/read_ahead_kb /sys/devices/virtual/bdi/179\\:32/read_ahead_kb /sys/devices/virtual/bdi/179\\:64/read_ahead_kb;do
     adb shell "echo $RHSIZE >> $b; cat $b"
+    [ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
     #echo "$RHSIZE >> $b cat $b"
-done
+done >> $LOG
 
 # grep results and reboot
 echo "Ok.. now lean back: we start the backup! This can take a fucking long time!"
@@ -84,6 +90,8 @@ echo "using: readahead=$RHSIZE, governor=$CGOV, scheduler=$ISCH"
 adb shell 'twrp backup SDRBO benchmarktest' | egrep -i '(seconds|backup rate)' \
     && adb shell 'rm -Rf /external_sd/TWRP/BACKUPS/*/benchmarktest/' \
     && adb reboot recovery && sleep 10 && adb wait-for-recovery && sleep 40 &&  [ ! -z "$KEY" ] && adb shell twrp decrypt $KEY
+
+[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
 
 echo finished
 
