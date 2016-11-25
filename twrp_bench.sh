@@ -34,7 +34,44 @@ LOG=${0/.sh/.log}
 
 echo "Starting $0 - $VERSION"
 
-[ -z "$1" ] &&echo "aborted! Missing args" && exit
+# usage info
+F_USAGE(){
+    cat <<EOHELP
+    
+    
+    Usage info
+    ============================================================
+    
+    -help                       => this output
+    
+    
+    required args:
+        -rhsize <kilobytes>     => read_ahead_kb
+        -gov <name>             => cpu governor
+        -isch <name>            => I/O scheduler
+        -mode [SDRBCO]          => backup args
+                                    # S = System partition
+                                    # D = Data partition
+                                    # R = Recovery partition
+                                    # B = Boot partition
+                                    # C = Cache partition
+                                    # O = Activate compression
+        
+    optional args:
+        -key <decrypt-pw>       => decryption password when using this script
+                                    in a loop (e.g. for i in 1 2 3 ;do ...)
+                                    May not work always 'cause sometimes you have
+                                    to reconnect the usb cable after a reboot
+                                    
+                                    
+EOHELP
+}
+
+
+[ -z "$1" ] &&echo -e "\naborted! Missing args\n\n" && F_USAGE && exit
+
+# check for help first
+echo "$@" |grep -q "-help" && F_USAGE && exit
 
 while [ ! -z "$1" ] ;do
     case "$1" in 
@@ -64,6 +101,13 @@ while [ ! -z "$1" ] ;do
         ;;
     esac
 done
+
+# precheck for req args
+if [ -z "$RHSIZE" ]||[ -z "$CGOV" ]||[ -z "$ISCH" ]||[ -z "$BAKARGS" ];then
+    echo "missing a required arg! ABORTED!"
+    F_USAGE
+    exit
+fi
 
 # ensure we use the external storage
 adb shell "twrp set tw_storage_path /external_sd" >> $LOG
