@@ -140,11 +140,11 @@ rm -f recovery.log
 unset REMLOG
 # do the magic
 adb shell "twrp backup $BAKARGS $BAKNAME" >> $LOG \
-    && REMLOG=$(adb shell "find /external_sd/TWRP/BACKUPS/*/$BAKNAME/recovery.log") \
-    && adb pull "$REMLOG" \
+    && adb pull /tmp/recovery.log \
     && egrep -i '(seconds|backup rate)' recovery.log \
     && adb shell "rm -Rf /external_sd/TWRP/BACKUPS/*/$BAKNAME/" \
-    && adb reboot recovery && sleep 10 && adb wait-for-recovery && sleep 40 &&  [ ! -z "$KEY" ] && adb shell twrp decrypt $KEY
+    && adb reboot recovery && sleep 10 && echo "waiting for recovered device" \
+    && adb wait-for-recovery && echo "waiting for twrp GUI" && sleep 40 &&  [ ! -z "$KEY" ] && adb shell twrp decrypt $KEY
 
 [ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
 
