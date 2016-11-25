@@ -50,6 +50,10 @@ while [ ! -z "$1" ] ;do
         ISCH=$2
         shift 2
         ;;
+        -mode)
+        BAKARGS="$2"
+        shift 2
+        ;;
         -key)
         KEY=$2
         shift 2
@@ -86,9 +90,16 @@ done >> $LOG
 
 # grep results and reboot
 echo "Ok.. now lean back: we start the backup! This can take a fucking long time!"
-echo "using: readahead=$RHSIZE, governor=$CGOV, scheduler=$ISCH"
-adb shell 'twrp backup SDRBO benchmarktest' | egrep -i '(seconds|backup rate)' \
-    && adb shell 'rm -Rf /external_sd/TWRP/BACKUPS/*/benchmarktest/' \
+echo "using: readahead=$RHSIZE, governor=$CGOV, scheduler=$ISCH, backup-args=$BAKARGS"
+# delete any existing previously pulled log
+rm -f recovery.log
+unset REMLOG
+# do the magic
+adb shell "twrp backup $BAKARGS $BAKNAME" >> $LOG \
+    && REMLOG=$(adb shell "find /external_sd/TWRP/BACKUPS/*/$BAKNAME/recovery.log") \
+    && adb pull "$REMLOG" \
+    && egrep -i '(seconds|backup rate)' recovery.log \
+    && adb shell "rm -Rf /external_sd/TWRP/BACKUPS/*/$BAKNAME/" \
     && adb reboot recovery && sleep 10 && adb wait-for-recovery && sleep 40 &&  [ ! -z "$KEY" ] && adb shell twrp decrypt $KEY
 
 [ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
