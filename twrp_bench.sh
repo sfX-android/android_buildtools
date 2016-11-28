@@ -26,13 +26,14 @@
 #           # set readahead
 #
 #
-VERSION=20161124
+VERSION=20161128
 ###############################################################################################################
 
 BAKNAME=benchmarktest
 LOG=${0/.sh/.log}
 
-echo "Starting $0 - $VERSION"
+echo "Starting $0 (version: $VERSION)"
+echo "Starting $0 (version: $VERSION)" > $LOG
 
 # usage info
 F_USAGE(){
