@@ -111,13 +111,13 @@ if [ -z "$RHSIZE" ]||[ -z "$CGOV" ]||[ -z "$ISCH" ]||[ -z "$BAKARGS" ];then
 fi
 
 # ensure we have a decrypted device if suggested
-[ ! -z "$KEY" ] && adb shell "twrp decrypt $KEY" >> $LOG
+[ ! -z "$KEY" ] && echo "decrypt key set. Trying to decrypt now..." && adb shell "twrp decrypt $KEY" >> $LOG
 ERR=$?
 [ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
 echo "device decrypted or no decryption needed (ended with >$ERR<)" >> $LOG
 
 # when we decrypted we need to take a breath because adb will reload then
-[ ! -z "$KEY" ] && sleep 5
+[ ! -z "$KEY" ] && echo "done. Now taking a deep breath before proceeding (adb needs that..)" && sleep 5
 
 # ensure we use the external storage
 adb shell 'twrp set tw_storage_path /external_sd' >> $LOG
