@@ -26,7 +26,7 @@
 #           "# set readahead" and "# set IO scheduler"
 #
 #
-VERSION=20161128
+VERSION=20161130
 ###############################################################################################################
 
 BAKNAME=benchmarktest
@@ -110,6 +110,15 @@ if [ -z "$RHSIZE" ]||[ -z "$CGOV" ]||[ -z "$ISCH" ]||[ -z "$BAKARGS" ];then
     exit
 fi
 
+# ensure we have a decrypted device if suggested
+[ ! -z "$KEY" ] && adb shell "twrp decrypt $KEY" >> $LOG
+ERR=$?
+[ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
+echo "device decrypted or no decryption needed (ended with >$ERR<)" >> $LOG
+
+# when we decrypted we need to take a breath because adb will reload then
+[ ! -z "$KEY" ] && sleep 5
+
 # ensure we use the external storage
 adb shell 'twrp set tw_storage_path /external_sd' >> $LOG
 ERR=$?
@@ -140,7 +149,6 @@ for b in /sys/devices/virtual/bdi/179\\:0/read_ahead_kb /sys/devices/virtual/bdi
     adb shell "echo $RHSIZE >> $b; cat $b"
     ERR=$?
     [ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
-    #echo "$RHSIZE >> $b cat $b"
 done >> $LOG
 echo "readahead set (ended with >$ERR<)" >> $LOG
 
@@ -157,8 +165,8 @@ adb shell "twrp backup $BAKARGS $BAKNAME" >> $LOG \
     && egrep -i '(seconds|backup rate)' recovery.log \
     && adb shell "rm -Rf /external_sd/TWRP/BACKUPS/*/$BAKNAME/" \
     && adb reboot recovery && sleep 10 && echo "waiting for recovered device (if encrypted just click CANCEL on decryption page to get recovered)" \
-    && adb wait-for-recovery && echo "waiting for twrp GUI" && sleep 40 &&  [ ! -z "$KEY" ] && adb shell twrp decrypt $KEY
-
+    && adb wait-for-recovery
+ERR=$?
 [ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
 echo "Backup ended with >$ERR<" >> $LOG
 
