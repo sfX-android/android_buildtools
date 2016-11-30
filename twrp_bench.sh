@@ -170,5 +170,5 @@ ERR=$?
 [ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
 echo "Backup ended with >$ERR<" >> $LOG
 
-echo finished
+echo -e "finished\n\n"
 
