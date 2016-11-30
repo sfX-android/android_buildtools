@@ -22,8 +22,8 @@
 #
 # Description:
 #       simple TWRP benchmark tester for the LG G4
-#       Use it with any other device if you like but then you have to adjust the topic:
-#           # set readahead
+#       Use it with any other device if you like ! Just adjust the topics:
+#           "# set readahead" and "# set IO scheduler"
 #
 #
 VERSION=20161128
@@ -105,37 +105,49 @@ done
 
 # precheck for req args
 if [ -z "$RHSIZE" ]||[ -z "$CGOV" ]||[ -z "$ISCH" ]||[ -z "$BAKARGS" ];then
-    echo "missing a required arg! ABORTED!"
+    echo -e "\n\nmissing a required arg! ABORTED!\n\n"
     F_USAGE
     exit
 fi
 
 # ensure we use the external storage
-adb shell "twrp set tw_storage_path /external_sd" >> $LOG
-[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
+adb shell 'twrp set tw_storage_path /external_sd' >> $LOG
+ERR=$?
+[ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
+echo "tw_storage_path set to /external_sd (ended with >$ERR<)" >> $LOG
 
 # ensure we have no old backups in place
+echo "deleting any previous >$BAKNAME< backup"
 adb shell "rm -vRf /external_sd/TWRP/BACKUPS/*/$BAKNAME/; rm -vRf /sdcard/TWRP/BACKUPS/*/$BAKNAME/" >> $LOG
-[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
+ERR=$?
+[ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
+echo "deleting any previous >$BAKNAME< backup finished (ended with >$ERR<)" >> $LOG
 
 # set cpu governor
 adb shell "for i in \$(find /sys/devices/ -type f -name scaling_governor);do echo $CGOV > \$i;cat \$i;done" >> $LOG
-[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
+ERR=$?
+[ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
+echo "governor set (ended with >$ERR<)" >> $LOG
 
 # set IO scheduler
 adb shell "for a in \$(find /sys/devices/soc.0/ -type f -name scheduler|grep mmc);do echo $ISCH > \$a; cat \$a;done" >> $LOG
-[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
+ERR=$?
+[ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
+echo "scheduler set (ended with >$ERR<)" >> $LOG
 
 # set readahead
 for b in /sys/devices/virtual/bdi/179\\:0/read_ahead_kb /sys/devices/virtual/bdi/254\\:0/read_ahead_kb /sys/devices/virtual/bdi/179\\:32/read_ahead_kb /sys/devices/virtual/bdi/179\\:64/read_ahead_kb;do
     adb shell "echo $RHSIZE >> $b; cat $b"
-    [ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
+    ERR=$?
+    [ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
     #echo "$RHSIZE >> $b cat $b"
 done >> $LOG
+echo "readahead set (ended with >$ERR<)" >> $LOG
 
 # grep results and reboot
 echo "Ok.. now lean back: we start the backup! This can take a fucking long time!"
 echo "using: readahead=$RHSIZE, governor=$CGOV, scheduler=$ISCH, backup-args=$BAKARGS"
+echo "Backup starting! using: readahead=$RHSIZE, governor=$CGOV, scheduler=$ISCH, backup-args=$BAKARGS" >> $LOG
 # delete any existing previously pulled log
 rm -f recovery.log
 unset REMLOG
@@ -144,10 +156,11 @@ adb shell "twrp backup $BAKARGS $BAKNAME" >> $LOG \
     && adb pull /tmp/recovery.log \
     && egrep -i '(seconds|backup rate)' recovery.log \
     && adb shell "rm -Rf /external_sd/TWRP/BACKUPS/*/$BAKNAME/" \
-    && adb reboot recovery && sleep 10 && echo "waiting for recovered device" \
+    && adb reboot recovery && sleep 10 && echo "waiting for recovered device (if encrypted just click CANCEL on decryption page to get recovered)" \
     && adb wait-for-recovery && echo "waiting for twrp GUI" && sleep 40 &&  [ ! -z "$KEY" ] && adb shell twrp decrypt $KEY
 
-[ $? -ne 0 ] && echo -e "\n\nERROR occured!!!\n ABORTED!!\nHere comes the LOG:\n $(cat $LOG)" && exit
+[ $ERR -ne 0 ] && echo -e "\n\nERROR <$ERR> occured!!!\n ABORTED!!\nHere comes the LOG:\n $(less $LOG)" && exit
+echo "Backup ended with >$ERR<" >> $LOG
 
 echo finished
 
