@@ -34,6 +34,9 @@ F_HELP(){
 	echo "Special variables:"
 	echo "	BUILDID		if you call 'BUILDID=samsung/i927 $0' you will skip that question"
 	echo "	LOKIFY		if you set this to 1 we will lokify at the end"
+        echo "  NEEDEDJAVA & JAVACBIN   overwrite internal java detection. BOTH needed!"
+        echo "                          NEEDEDJAVA e.g.: java-7-oracle"
+        echo "                          JAVACBIN e.g.: /usr/lib/jvm/java-7-openjdk-amd64/bin/javac"
 	echo
 	echo "Kernelonly variables:"
 	echo "	KDIR		if set it overwrites the default kernel dir (kernel/$BUILDID)"
@@ -120,8 +123,11 @@ case "$BUILDJAV" in
         BUILDEXEC="mka"
         ;;
         *)
-        echo "cannot determine correct Java version! ABORTED"
-        exit 3
+        if [ -z $NEEDEDJAVA ]||[ -z $JAVACBIN ];then
+            echo "cannot determine best java version and you havent choosen JAVACBIN or NEEDEDJAVA var!"
+            F_HELP
+            exit 3
+        fi
         ;;
 esac
 echo "... checking if we need to switch Java version" 
