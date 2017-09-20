@@ -318,8 +318,8 @@ case $1 in
 		if [ "$RARCH" == "arm64" ];then	
 			DTBIMAGE="dtb"
 
-			make O="$OUTDIR" $KCONF && echo "makefile done. now starting the machines... " \
-				&& make O="$OUTDIR" -j$MAXCPU \
+			make O="$OUTDIR" $KCONF -Werror && echo "makefile done. now starting the machines... " \
+				&& make O="$OUTDIR" -j$MAXCPU -Werror \
 				&& echo "make completed successfully! Now copying the kernel to your device tree folder" \
 				&& cp -v $ZIMAGE_DIR/Image.gz-dtb $DTDIR/Image.gz-dtb.new \
 				&& echo "Now starting DTB creation" \
