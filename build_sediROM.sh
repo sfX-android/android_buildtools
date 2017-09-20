@@ -307,7 +307,7 @@ case $1 in
 		ZIMAGE_DIR=$OUTDIR/arch/$RARCH/boot/
 
 		export ARCH=$RARCH
-		export TARGET_PRODUCT=${BUILDID#*/}_xdajog
+		export TARGET_PRODUCT=${BUILDID#*/}_${USER}
 		export TARGET_KERNEL_CONFIG=$KCONF
 		export CROSS_COMPILE="${CCPATH}/${CCPREFIX}"
 		export KCONF=$KCONF
