@@ -326,11 +326,13 @@ case $1 in
 				&& make O="$OUTDIR" -j$MAXCPU -Werror \
 				&& echo "make completed successfully! Now copying the kernel to your device tree folder" \
 				&& cp -v $ZIMAGE_DIR/Image.gz-dtb $DTDIR/Image.gz-dtb.new \
+				&& cp -v $ZIMAGE_DIR/Image $DTDIR/Image.new \
 				&& echo "Now starting DTB creation" \
-				&& $MBTOOLS/dtbToolCM -2 -o $KERNOUT/$DTBIMAGE -s 2048 -p $OUTDIR/scripts/dtc/ $OUTDIR/arch/$RARCH/boot/dts/ \
-                		&& cp -v $KERNOUT/$DTBIMAGE $DTDIR/dtb.img-new \
-				&& md5sum $KERNOUT/$DTBIMAGE $DTDIR/dtb.img-new $ZIMAGE_DIR/Image.gz-dtb $DTDIR/Image.gz-dtb.new \
-				&& echo -e "\nAll done successfull!!\n\n\t--> KERNEL:\t$DTDIR/Image.gz-dtb.new\n\t--> DTB:\t$DTDIR/dtb.img-new\n\n"
+				&& $MBTOOLS/dtbToolCM -3 -o $KERNOUT/$DTBIMAGE -s 2048 -p $OUTDIR/scripts/dtc/ $OUTDIR/arch/$RARCH/boot/dts/ \
+                		&& cp -v $KERNOUT/$DTBIMAGE $DTDIR/dt.img-new \
+				&& md5sum $KERNOUT/$DTBIMAGE $DTDIR/dt.img-new $ZIMAGE_DIR/Image.gz-dtb $DTDIR/Image.gz-dtb.new \
+				&& echo -e "\nAll done successfull!!\n\n\t--> KERNEL:\t$DTDIR/Image.gz-dtb.new\n\t\t\t$DTDIR/Image.new\n\t--> DTB:\t$DTDIR/dt.img-new\n\n"
+				#&& $MBTOOLS/dtbToolCM -2 -o $KERNOUT/$DTBIMAGE -s 2048 -p $OUTDIR/scripts/dtc/ $OUTDIR/arch/$RARCH/boot/dts/ \
 		else
 	                make O="$OUTDIR" $KCONF && echo "makefile done. now starting the machines... " \
        		             	&& make O="$OUTDIR" -j$MAXCPU zImage \
