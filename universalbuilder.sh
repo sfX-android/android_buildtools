@@ -128,6 +128,7 @@ case "$BUILDJAV" in
         BUILDEXEC="mka"
         ;;
         *)
+        BUILDEXEC="make -j${MAXCPU}"
         if [ -z $NEEDEDJAVA ]||[ -z $JAVACBIN ];then
             echo "cannot determine best java version and you havent choosen JAVACBIN or NEEDEDJAVA var!"
             F_HELP
