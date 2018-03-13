@@ -396,4 +396,4 @@ else
 	echo "... skipping loki"
 fi
 
-
+exit $BUILDEND
