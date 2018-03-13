@@ -40,6 +40,8 @@ F_HELP(){
         echo "  NEEDEDJAVA & JAVACBIN   overwrite internal java detection. BOTH needed!"
         echo "                          NEEDEDJAVA e.g.: java-7-oracle"
         echo "                          JAVACBIN e.g.: /usr/lib/jvm/java-7-openjdk-amd64/bin/javac"
+        echo "  BUILDWHAT       will be auto generated from vendorsetup.sh which will be overwritten"
+        echo "                  when this var is specified. Example: aoscp_h815"
 	echo
 	echo "Kernelonly variables:"
 	echo "	KDIR		if set it overwrites the default kernel dir (kernel/$BUILDID)"
@@ -84,7 +86,7 @@ if [ -z $BUILDID ];then
 else
     echo "BUILDID was predefined as $BUILDID"
 fi
-BUILDWHAT=$(egrep "^add_lunch_combo" device/$BUILDID/vendorsetup.sh |cut -d" " -f2)
+[ -z $BUILDWHAT ] && BUILDWHAT=$(egrep "^add_lunch_combo" device/$BUILDID/vendorsetup.sh |cut -d" " -f2)
 
 # choose the right java JDK
 # you need to have installed: openjdk-7-jdk for java1.7 and openjdk-6-jdk for v1.6
@@ -400,3 +402,4 @@ else
 	echo "... skipping loki"
 fi
 
+exit $BUILDEND
