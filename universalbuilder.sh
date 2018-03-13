@@ -5,12 +5,14 @@
 #
 #################################################
 
-# defines the maximum cpu's you want to use. Valid for AOSP builds only because
+# defines the maximum cpu's you want to use if not set by env. Valid for AOSP builds only because
 # for CM we always use mka / all CPUs
-MAXCPU=8
+[ -z "$MAXCPU" ] && MAXCPU=8
 
 SRCDIR="build/envsetup.sh"
 [ ! -f $SRCDIR ]&& echo "Are you in the root dir??? aborted." && exit 3
+
+EXDIR=${0%/*}
 
 # help/usage
 F_HELP(){
@@ -32,6 +34,7 @@ F_HELP(){
 	echo "	<showtargets>	Scans for all available targets and creates a file output."
 	echo 
 	echo "Special variables:"
+	echo "	MAXCPU		for commands supporting it you can define a max amount of CPUs"
 	echo "	BUILDID		if you call 'BUILDID=samsung/i927 $0' you will skip that question"
 	echo "	LOKIFY		if you set this to 1 we will lokify at the end"
         echo "  NEEDEDJAVA & JAVACBIN   overwrite internal java detection. BOTH needed!"
@@ -314,6 +317,7 @@ case $1 in
 
 		# build kernel device tree 
                 MBTOOLS="$CDIR/prebuilts/devtools/mkbootimg_tools"
+		[ ! -d $MBTOOLS ]&& MBTOOLS="$CDIR/$EXDIR/mkbootimg_tools"
 		KERNOUT=$OUTDIR/kernel
 		DTDIR="$CDIR/device/$BUILDID"
 		mkdir -p $KERNOUT
@@ -322,7 +326,7 @@ case $1 in
 		if [ "$RARCH" == "arm64" ];then	
 			DTBIMAGE="dtb"
 
-			make O="$OUTDIR" $KCONF -Werror && echo "makefile done. now starting the machines... " \
+			make -j$MAXCPU O="$OUTDIR" $KCONF -Werror && echo "makefile done. now starting the machines... " \
 				&& make O="$OUTDIR" -j$MAXCPU -Werror \
 				&& echo "make completed successfully! Now copying the kernel to your device tree folder" \
 				&& cp -v $ZIMAGE_DIR/Image.gz-dtb $DTDIR/Image.gz-dtb.new \
@@ -395,5 +399,4 @@ if [ $LOKIFY -eq 1 ] && [ $LOKIOK -eq 0 ]&&[ $BUILDEND -eq 0 ];then
 else
 	echo "... skipping loki"
 fi
-
 
