@@ -46,6 +46,8 @@ F_HELP(){
 	echo "Kernelonly variables:"
 	echo "	KDIR		if set it overwrites the default kernel dir (kernel/$BUILDID)"
 	echo "	KCONF		the kernel defconfig filename - will prompt if not set"
+        echo "  CCPATH          the full path to the wanted toolchain to use - default is UBER TC on arm64"
+        echo "  CCPREFIX        the prefix for the toolchain cmds"
 	echo
 }
 # check if we have at least 1 arg:
@@ -288,10 +290,9 @@ case $1 in
 		done
 
 		if [ "$RARCH" == "arm64" ];then
-			# Toolchain UBER 4.9 !
-			# TODO: make the TC selectable..
-                        CCPATH=$CDIR/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin
-			CCPREFIX="aarch64-linux-android-"
+			# default is Toolchain UBER 4.9 and requires properly synced sources
+                        [ -z "$CCPATH" ] && CCPATH=$CDIR/prebuilts/gcc/linux-x86/aarch64-linux-android-4.9-kernel/bin
+			[ -z "$CCPREFIX" ] && CCPREFIX="aarch64-linux-android-"
         	        TC="UBER4.9"
 		else
 		    if [ "$RARCH" == "arm" ];then
