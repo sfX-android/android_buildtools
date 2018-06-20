@@ -1,7 +1,7 @@
 #!/bin/bash
 #################################################################
 #
-# build wrapper to satisfy jenkins
+# wrapper to satisfy android builds with jenkins
 #
 #################################################################
 
@@ -9,7 +9,9 @@ echo "starting build wrapper $0 ..."
 SRCPATH="$1"
 RUNCMD="$2"
 
-echo -e "USE_CCACHE: $USE_CCACHE\nANDROID_JACK_VM_ARGS: $ANDROID_JACK_VM_ARGS\nSRCPATH: $SRCPATH\nRUNCMD: $RUNCMD"
+export CCACHE_DIR=/home/androidsource/jenkins/.ccache
+
+echo -e "USE_CCACHE: $USE_CCACHE\nCCACHE_DIR: $CCACHE_DIR\nANDROID_JACK_VM_ARGS: $ANDROID_JACK_VM_ARGS\nSRCPATH: $SRCPATH\nRUNCMD: $RUNCMD"
 
 f_help(){
   echo -e "\n\nUsage:\n $0 sources-path cmd-to-run\n"
