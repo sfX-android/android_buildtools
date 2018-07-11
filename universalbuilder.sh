@@ -338,6 +338,7 @@ case $1 in
 				&& echo "Now starting DTB creation" \
 				&& $MBTOOLS/dtbToolCM -3 -o $KERNOUT/$DTBIMAGE -s 2048 -p $OUTDIR/scripts/dtc/ $OUTDIR/arch/$RARCH/boot/dts/ \
                 		&& cp -v $KERNOUT/$DTBIMAGE $DTDIR/dt.img-new \
+				&& chmod 664 $DTDIR/dt.img-new \
 				&& md5sum $KERNOUT/$DTBIMAGE $DTDIR/dt.img-new $ZIMAGE_DIR/Image.gz-dtb $DTDIR/Image.gz-dtb.new \
 				&& echo -e "\nAll done successfull!!\n\n\t--> KERNEL:\t$DTDIR/Image.gz-dtb.new\n\t\t\t$DTDIR/Image.new\n\t--> DTB:\t$DTDIR/dt.img-new\n\n"
 				#&& $MBTOOLS/dtbToolCM -2 -o $KERNOUT/$DTBIMAGE -s 2048 -p $OUTDIR/scripts/dtc/ $OUTDIR/arch/$RARCH/boot/dts/ \
