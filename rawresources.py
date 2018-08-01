@@ -51,7 +51,7 @@ def extractImageInfo(imgInfo):
 	myimg = image(name, offset, size, width, height, posX, posY)
 	myimg.printStats()
 
-if (len(sys.argv) < 2):
+if (len(sys.argv) != 3):
 	printUsage()
 	
 if (sys.argv[1] == "extract"):
