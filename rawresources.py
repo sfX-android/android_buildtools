@@ -3,7 +3,7 @@ import sys
 import codecs
 from pathlib import Path
 
-HEADER_SIZE = 0x1000
+HEADER_SIZE = 0x800
 HEADER_MAGIC = b'BOOT_IMAGE_RLE'
 HEADER_MAGIC_SIZE = 14
 IMAGE_INFO_SIZE = 64
