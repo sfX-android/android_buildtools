@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import codecs
+import os
 from pathlib import Path
 
 HEADER_SIZE = 0x800
@@ -53,8 +54,20 @@ def extractImageInfo(imgInfo,raw_Data):
 	outputFiles(myimg,raw_Data)
 	
 def outputFiles(myimg,raw_Data):
-	with open("out/{}".format(myimg.name),'wb') as newFile:
-		newFile.write(raw_Data[myimg.offset:myimg.offset + myimg.size])
+	relevantdata = raw_Data[myimg.offset:myimg.offset + myimg.size]
+	with open("out/raw/{}".format(myimg.name),'wb') as newFile:
+		newFile.write(relevantdata)
+	flipped = flipEndianness(relevantdata)
+	with open("out/flipped/{}".format(myimg.name),'wb') as newFile:
+		newFile.write(flipped)
+		
+def flipEndianness(binary):
+	dataList = list(binary)
+	flipped = []
+	for dataByte in range(0,len(dataList),2):
+		flipped.insert(0,dataList[dataByte])
+		flipped.insert(1,dataList[dataByte+1])
+	return bytes(flipped)
 
 if (len(sys.argv) != 3):
 	printUsage()
@@ -73,6 +86,12 @@ if (sys.argv[1] == "extract"):
 			print("Error: The file you supplied is not a valid raw_resources image.")
 			printUsage()
 		# consume the whitespace
+		if not os.path.exists('./out'):
+			os.makedirs('./out')
+		if not os.path.exists('./out/raw'):
+			os.makedirs('./out/raw')
+		if not os.path.exists('./out/flipped'):
+			os.makedirs('./out/flipped')
 		byte = rr.read(HEADER_SIZE - HEADER_MAGIC_SIZE)
 		
 		while True:
