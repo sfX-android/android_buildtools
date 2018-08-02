@@ -35,7 +35,7 @@ class image:
 		printhex("posX", self.posX)
 		printhex("posY", self.posY)
 
-def extractImageInfo(imgInfo):
+def extractImageInfo(imgInfo,raw_Data):
 	name   = ""
 	offset = imgInfo[40] + (imgInfo[41] * 0x100) + (imgInfo[42] * 0x10000)
 	size   = imgInfo[44] + (imgInfo[45] * 0x100) + (imgInfo[46] * 0x10000)
@@ -50,6 +50,11 @@ def extractImageInfo(imgInfo):
 	
 	myimg = image(name, offset, size, width, height, posX, posY)
 	myimg.printStats()
+	outputFiles(myimg,raw_Data)
+	
+def outputFiles(myimg,raw_Data):
+	with open("out/{}".format(myimg.name),'wb') as newFile:
+		newFile.write(raw_Data[myimg.offset:myimg.offset + myimg.size])
 
 if (len(sys.argv) != 3):
 	printUsage()
@@ -61,6 +66,8 @@ if (sys.argv[1] == "extract"):
 		print("Error:",inFile,"is not a file.")
 		printUsage()
 	with open(inFile, "rb") as rr:
+		raw_Data = rr.read()
+		rr.seek(0)
 		byte = rr.read(HEADER_MAGIC_SIZE)
 		if (byte != HEADER_MAGIC):
 			print("Error: The file you supplied is not a valid raw_resources image.")
@@ -73,4 +80,4 @@ if (sys.argv[1] == "extract"):
 			imgInfo = codecs.encode(imgInfo, 'hex')
 			if (imgInfo.startswith(b'00')):
 				break
-			extractImageInfo(bytearray(codecs.decode(imgInfo, 'hex')))
+			extractImageInfo(bytearray(codecs.decode(imgInfo, 'hex')),raw_Data)
