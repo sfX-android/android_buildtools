@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import sys
-import codecs
 import os
 from pathlib import Path
 
@@ -18,7 +16,7 @@ The format for the image data:
 3 bytes for height
 3 bytes for posX
 3 bytes for posY
-6 other ones (I'm not sure about those)
+6 (1 between each data value)
 The bytes are done in the opposite way to usual - The first has the least significant value
 """
 
@@ -109,7 +107,6 @@ if __name__ == '__main__':
 
         while True:
             imgInfo = bytearray(rr.read(IMAGE_INFO_SIZE)) # Reads the image info for one image (and subsequently moves the read head to the start of the next one)
-            imgInfo = codecs.encode(imgInfo, 'hex')
-            if (imgInfo.startswith(b'00')): # Reached the end of the image info
+            if (imgInfo[0] == 0): # Reached the end of the image info
                 break
-            extractImageInfo(bytearray(codecs.decode(imgInfo, 'hex')), raw_Data)
+            extractImageInfo(imgInfo, raw_Data)
