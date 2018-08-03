@@ -6,14 +6,8 @@ from pathlib import Path
 
 HEADER_SIZE = 2048
 HEADER_MAGIC = b'BOOT_IMAGE_RLE'
-HEADER_MAGIC_SIZE = 14
+HEADER_MAGIC_SIZE = len(HEADER_MAGIC)
 IMAGE_INFO_SIZE = 64
-
-
-def printUsage():
-    print("rawresources.py <extract> raw_resources.bin")
-    exit()
-
 
 def printhex(name, val):
     print(name + ":", val)
@@ -76,11 +70,9 @@ def flipEndianness(binary):
     return bytes(flipped)
 
 
-if (len(sys.argv) != 3):
-    printUsage()
+if __name__ == '__main__':
 
-if (sys.argv[1] == "extract"):
-    inFile = sys.argv[2]
+    inFile = "raw_resources.bin"
 
     if not (Path(inFile).is_file()):
         print("Error:", inFile, "is not a file.")
