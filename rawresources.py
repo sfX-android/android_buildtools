@@ -4,7 +4,7 @@ import codecs
 import os
 from pathlib import Path
 
-HEADER_SIZE = 0x800
+HEADER_SIZE = 2048
 HEADER_MAGIC = b'BOOT_IMAGE_RLE'
 HEADER_MAGIC_SIZE = 14
 IMAGE_INFO_SIZE = 64
@@ -42,12 +42,12 @@ class image:
 
 def extractImageInfo(imgInfo, raw_Data):
     name = ""
-    offset = imgInfo[40] + (imgInfo[41] * 0x100) + (imgInfo[42] * 0x10000)
-    size = imgInfo[44] + (imgInfo[45] * 0x100) + (imgInfo[46] * 0x10000)
-    width = imgInfo[48] + (imgInfo[49] * 0x100) + (imgInfo[50] * 0x10000)
-    height = imgInfo[52] + (imgInfo[53] * 0x100) + (imgInfo[54] * 0x10000)
-    posX = imgInfo[56] + (imgInfo[57] * 0x100) + (imgInfo[58] * 0x10000)
-    posY = imgInfo[60] + (imgInfo[61] * 0x100) + (imgInfo[62] * 0x10000)
+    offset = imgInfo[40] + (imgInfo[41] * 256) + (imgInfo[42] * 65536)
+    size = imgInfo[44] + (imgInfo[45] * 256) + (imgInfo[46] * 65536)
+    width = imgInfo[48] + (imgInfo[49] * 256) + (imgInfo[50] * 65536)
+    height = imgInfo[52] + (imgInfo[53] * 256) + (imgInfo[54] * 65536)
+    posX = imgInfo[56] + (imgInfo[57] * 256) + (imgInfo[58] * 65536)
+    posY = imgInfo[60] + (imgInfo[61] * 256) + (imgInfo[62] * 65536)
     while True:
         imgInfoHex = codecs.encode(imgInfo, 'hex')
         name = bytearray.fromhex(imgInfoHex.decode().split("00")[0]).decode()
