@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import struct
 from pathlib import Path
 
 HEADER_SIZE = 2048 # This is the size of the redundant information between the start of the file and the first set of image information
@@ -53,6 +54,7 @@ def extractImageInfo(imgInfo, raw_Data):
         nameList.append(imgInfo[byteData])
     name = (bytes(nameList)).decode() # Takes the bytes in the list, converts it back to raw bytes and then decodes it into a string
     offset = imgInfo[40] + (imgInfo[41] * 256) + (imgInfo[42] * 65536)
+    #print(imgInfo[40], imgInfo[41], imgInfo[42])
     size = imgInfo[44] + (imgInfo[45] * 256) + (imgInfo[46] * 65536)
     width = imgInfo[48] + (imgInfo[49] * 256) + (imgInfo[50] * 65536)
     height = imgInfo[52] + (imgInfo[53] * 256) + (imgInfo[54] * 65536)
@@ -66,21 +68,14 @@ def extractImageInfo(imgInfo, raw_Data):
 
 def outputFiles(myimg, raw_Data):
     relevantdata = raw_Data[myimg.offset:myimg.offset + myimg.size]
-    with open("out/raw/{}".format(myimg.name), 'wb') as newFile:
+    rawfile = "out/raw/{}".format(myimg.name) + ".data"
+    with open(rawfile, 'wb') as newFile:
         newFile.write(relevantdata)
-    flipped = flipEndianness(relevantdata)
-    with open("out/flipped/{}".format(myimg.name), 'wb') as newFile:
-        newFile.write(flipped)
-
-
-def flipEndianness(binary):
-    dataList = list(binary)
-    flipped = []
-    for dataByte in range(0, len(dataList), 2):
-        flipped.insert(0, dataList[dataByte])
-        flipped.insert(1, dataList[dataByte + 1])
-    return bytes(flipped)
-
+    flippedfile = "out/flipped/{}".format(myimg.name) + ".rle.data"
+    with open(rawfile, "rb") as old, open(flippedfile, "wb") as new:
+        for chunk in iter(lambda: old.read(4), b""):
+            chunk = struct.pack("<f", struct.unpack(">f", chunk)[0])
+            new.write(chunk)
 
 if __name__ == '__main__':
 
