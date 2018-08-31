@@ -45,7 +45,7 @@ export TW_DEVICE_VERSION="$(date +%F)"
 export HOSTNAME="sfxbook-droid"
 
 # the user which should be displayed in your builds (settings->about etc)
-export USERNAME=steadfasterx
+export USER=steadfasterx
 
 # sets a part of the bash prompt to identify where you are in
 BASHPROMPT=android      # can be overwritten by the "check how we started" case condition
