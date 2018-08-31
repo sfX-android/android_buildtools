@@ -90,6 +90,12 @@ ccache --set-config=max_size=$CACHESIZE
 
 # prepare the basics
 cd ${BDIR}/${ADIR}
+ENVSRC=custombuildenv
+
+cat >$ENVSRC<<EOHOST
+# needed to overwrite the build hostname
+alias hostname='echo $HOSTNAME'
+EOHOST
 source build/envsetup.sh
 $SELECTDEVICE
 
@@ -127,8 +133,10 @@ lsfns () {
 export -f $(lsfns)
 #export $(lsvars)
 
+echo "PS1='\[\033[01;32m\]['${BASHPROMPT}' ('${VIRTUAL_ENV##*/}')]\[\033[01;37m\] [\['$PDIRSIZE']\$\[\033[00m\] '" >> $ENVSRC
+
 # fasten your seat bells.. the magic happens NOW!
-/bin/bash --norc -c "echo -e \"\nAndroid build environment has been setup:\n\tpython: $(python --version 2>&1)\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USERNAME\n\thost set: $HOSTNAME\n\"; \
-                PS1='\[\033[01;32m\]['${BASHPROMPT}' ('${VIRTUAL_ENV##*/}')]\[\033[01;37m\] [\['$PDIRSIZE']\$\[\033[00m\] ' $SHELL --norc"
+/bin/bash  -c "echo -e \"\nAndroid build environment has been setup:\n\tpython: $(python --version 2>&1)\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USER\n\thost set: $HOSTNAME\n\"; \
+               $SHELL --rcfile $ENVSRC"
 
 
