@@ -15,13 +15,14 @@
 #       $> ln -s /usr/lib/python2.7/* ~/venvpy2/lib/python2.7/
 #
 ##########################################################################
+SRCONLY=0
 # ensure we fail completely when any tiny bit fails
 set -e
 
 # change this to the name of your virtualenv environment name you created
 VENVNAME=venvpy2
 
-source ~/$VENVNAME/bin/activate
+source ~/$VENVNAME/bin/activate && echo venv sourced...
 
 # when building with jack how much RAM should it suck?
 JACKRAM=10G
@@ -66,6 +67,10 @@ case $1 in
     los15)
     ADIR="los/15.1"
     ;;
+    manual) # will just display a copy/paste template
+    ADIR=$2
+    SRCONLY=1
+    ;;
     *)
     ADIR="$1"
     ;;
@@ -74,6 +79,8 @@ esac
 #######################################################################################
 # no changes beyond here needed (usually)
 #
+
+[ -z $ADIR ] && echo "require a starting dir.. ABORTED" && exit 1
 
 # some special vars
 export HISTFILE="$HOME/.android_big_history"                # sets the path to a custom history file for android building
@@ -130,13 +137,57 @@ lsfns () {
 #         ;;
 #   esac
 #}
-export -f $(lsfns)
 #export $(lsvars)
 
+PYVER=$(python --version 2>&1)
+
+# set bash prompt
 echo "PS1='\[\033[01;32m\]['${BASHPROMPT}' ('${VIRTUAL_ENV##*/}')]\[\033[01;37m\] [\['$PDIRSIZE']\$\[\033[00m\] '" >> $ENVSRC
 
-# fasten your seat bells.. the magic happens NOW!
-/bin/bash  -c "echo -e \"\nAndroid build environment has been setup:\n\tpython: $(python --version 2>&1)\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USER\n\thost set: $HOSTNAME\n\"; \
-               $SHELL --rcfile $ENVSRC"
+if [ $SRCONLY -eq 0 ] ;then
+    export -f $(lsfns)
 
+    # fasten your seat bells.. the magic happens NOW!
+    /bin/bash --rcfile <(echo "echo -e \"\nAndroid build environment has been setup:\n\tpython: $PYVER\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USER\n\thost set: $HOSTNAME\n\";source $ENVSRC")
+
+    #/bin/bash  -c "echo -e \"\nAndroid build environment has been setup:\n\tpython: $(python --version 2>&1)\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USER\n\thost set: $HOSTNAME\n\"; \
+     #          $SHELL --rcfile $ENVSRC"
+else
+    echo "copy & paste only mode.."
+    cat <<EOFCP
+
+copy everything between these 2 lines and paste it to your shell
+*****************************************************************
+
+source ~/$VENVNAME/bin/activate && echo venv sourced...
+export USE_CCACHE=$USE_CCACHE
+export CCACHE_DIR="$CCACHE_DIR"
+export ANDROID_SET_JAVA_HOME=true
+export TW_DEVICE_VERSION="$(date +%F)"
+export HOSTNAME=$HOSTNAME
+export USER=$USER
+export BASHPROMPT="$BASHPROMPT"
+export PDIRSIZE="$PDIRSIZE"
+export BDIR="$BDIR"
+export HISTFILE="$HOME/.android_big_history"
+export HISTFILESIZE="200000"
+export HISTSIZE="10000"
+[ ! -f $HISTFILE ] && touch $HISTFILE
+export LANG="$LANG"
+export LC_ALL=C
+ccache --set-config=max_size=$CACHESIZE
+cd ${BDIR}/${ADIR}
+alias hostname='echo $HOSTNAME'
+source build/envsetup.sh
+export ANDROID_JACK_VM_ARGS="$ANDROID_JACK_VM_ARGS"
+export JAVA_HOME="$MY_JAVA_HOME"
+
+
+*****************************************************************
+EOFCP
+    #bash --rcfile <(echo "PS1=\"$EDITHOST/system/local \$>\";cd $SYSDIR/ && ls -la")
+    #source $ENVSRC
+    #PS1='\[\033[01;32m\]['${BASHPROMPT}' ('${VIRTUAL_ENV##*/}')]\[\033[01;37m\] [\['$PDIRSIZE']\$\[\033[00m\] '
+    #echo -e "\nAndroid build environment has been setup:\n\tpython: $(python --version 2>&1)\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USER\n\thost set: $HOSTNAME\n"
+fi
 
