@@ -76,9 +76,11 @@ esac
 #
 
 # some special vars
-export HISTFILE="~/.android_big_history"                # sets the path to a custom history file for android building
+export HISTFILE="$HOME/.android_big_history"                # sets the path to a custom history file for android building
 export HISTFILESIZE="200000"                            # max lines of $HISTFILE at startup time of a session (e.g. 100k have an avg of ~4MB file size)
 export HISTSIZE="10000"                                 # max lines that are stored in MEMORY(!) in a history list while your bash session is ONGOING
+
+[ ! -f $HISTFILE ] && touch $HISTFILE
 
 # required! otherwise build will fail :p
 export LANG=$LANG
