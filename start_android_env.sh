@@ -154,12 +154,8 @@ if [ $SRCONLY -eq 0 ] ;then
      #          $SHELL --rcfile $ENVSRC"
 else
     echo "copy & paste only mode.."
-    cat <<EOFCP
 
-copy everything between these 2 lines and paste it to your shell
-*****************************************************************
-
-source ~/$VENVNAME/bin/activate && echo venv sourced...
+    cat >$ENVSRC<<EOFSRC
 export USE_CCACHE=$USE_CCACHE
 export CCACHE_DIR="$CCACHE_DIR"
 export ANDROID_SET_JAVA_HOME=true
@@ -172,22 +168,26 @@ export BDIR="$BDIR"
 export HISTFILE="$HOME/.android_big_history"
 export HISTFILESIZE="200000"
 export HISTSIZE="10000"
-[ ! -f $HISTFILE ] && touch $HISTFILE
 export LANG="$LANG"
 export LC_ALL=C
-ccache --set-config=max_size=$CACHESIZE
-cd ${BDIR}/${ADIR}
 alias hostname='echo $HOSTNAME'
-source build/envsetup.sh
 export ANDROID_JACK_VM_ARGS="$ANDROID_JACK_VM_ARGS"
 export JAVA_HOME="$MY_JAVA_HOME"
+PS1='\[\033[01;32m\]['${BASHPROMPT}' ('${VIRTUAL_ENV##*/}')]\[\033[01;37m\] [\['$PDIRSIZE']\$\[\033[00m\] '
+EOFSRC
+    cat <<EOFCP
+
+copy everything between these 2 lines and paste it to your shell
+*****************************************************************
+
+  cd ${BDIR}/${ADIR}
+  ccache --set-config=max_size=$CACHESIZE
+  source ~/$VENVNAME/bin/activate
+  source build/envsetup.sh
+  source $ENVSRC
 
 
 *****************************************************************
 EOFCP
-    #bash --rcfile <(echo "PS1=\"$EDITHOST/system/local \$>\";cd $SYSDIR/ && ls -la")
-    #source $ENVSRC
-    #PS1='\[\033[01;32m\]['${BASHPROMPT}' ('${VIRTUAL_ENV##*/}')]\[\033[01;37m\] [\['$PDIRSIZE']\$\[\033[00m\] '
-    #echo -e "\nAndroid build environment has been setup:\n\tpython: $(python --version 2>&1)\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USER\n\thost set: $HOSTNAME\n"
 fi
 
