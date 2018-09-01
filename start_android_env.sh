@@ -106,10 +106,12 @@ case $1 in
     ;;
     manual) # will just display a copy/paste template
     ADIR=$2
+    BASHPROMPT="$ADIR"
     SRCONLY=1
     ;;
     *)
     ADIR="$1"
+    BASHPROMPT="$ADIR"
     ;;
 esac
 
@@ -193,7 +195,6 @@ if [ $SRCONLY -eq 0 ] ;then
      #          $SHELL --rcfile $ENVSRC"
 else
     echo "copy & paste only mode.."
-
     cat >$ENVSRC<<EOFSRC
 export USE_CCACHE=$USE_CCACHE
 export CCACHE_DIR="$CCACHE_DIR"
