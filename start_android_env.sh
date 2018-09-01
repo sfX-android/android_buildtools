@@ -212,6 +212,7 @@ export LC_ALL=C
 alias hostname='echo $HOSTNAME'
 export ANDROID_JACK_VM_ARGS="$ANDROID_JACK_VM_ARGS"
 export JAVA_HOME="$MY_JAVA_HOME"
+PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
 PS1='\[\033[01;32m\]['${BASHPROMPT}' ('${VIRTUAL_ENV##*/}')]\[\033[01;37m\] [\['$PDIRSIZE']\$\[\033[00m\] '
 EOFSRC
     cat <<EOFCP
@@ -224,9 +225,14 @@ copy everything between these 2 lines and paste it to your shell
   source ~/$VENVNAME/bin/activate
   source build/envsetup.sh
   source $ENVSRC
+  history -r $HISTFILE
 
 
 *****************************************************************
+
+DO NOT FORGET to lunch ;)
+
+
 EOFCP
 fi
 
