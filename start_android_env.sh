@@ -16,8 +16,41 @@
 #
 ##########################################################################
 SRCONLY=0
+BIN=${0##*/}
+F_HELP(){
+    cat <<EOHELP
+
+    Starts a valid Android/TWRP build environment on Arch Linux
+
+
+    Usage:
+    ---------------------------------------------------------------------
+    $BIN id|manual [dir]
+
+    
+    At the moment the only fully working mode is "manual":
+
+    $BIN manual dirname
+    (e.g.: $BIN manual omni)
+
+
+    You must adjust the BDIR variable in $BIN which must be 1 dir before
+    the sources directory. This makes sure you can use multiple subdirs e.g
+    having one for TWRP (e.g. omni), one for LOS 14.1 (e.g. los14) and so on
+
+    Current BDIR is: $BDIR
+    Available dirs within BDIR (can be used by manual mode):
+    $(for d in $(find $BDIR -maxdepth 1 -type d);do echo -e "\t${d/$BDIR/}" | tr -d "/" ;done)
+
+
+EOHELP
+}
 # ensure we fail completely when any tiny bit fails
 set -e
+
+###########################################################################
+# VARIABLE SECTION
+#
 
 # change this to the name of your virtualenv environment name you created
 VENVNAME=venvpy2
@@ -59,6 +92,10 @@ BDIR=/opt/data/development/android_build
 
 # check how we started
 case $1 in
+    -help|--help|-h|help)
+    F_HELP
+    exit
+    ;;
     twrp)
     ADIR=omni
     SELECTDEVICE="lunch omni_g4-eng"
@@ -76,6 +113,8 @@ case $1 in
     ;;
 esac
 
+#
+# END - VARIABLE SECTION
 #######################################################################################
 # no changes beyond here needed (usually)
 #
