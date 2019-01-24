@@ -189,7 +189,7 @@ if [ $SRCONLY -eq 0 ] ;then
     export -f $(lsfns)
 
     # fasten your seat bells.. the magic happens NOW!
-    /bin/bash --rcfile <(echo "echo -e \"\nAndroid build environment has been setup:\n\tpython: $PYVER\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USER\n\thost set: $HOSTNAME\n\";source $ENVSRC")
+    /bin/bash --rcfile < "(echo "echo -e \"\nAndroid build environment has been setup:\n\tpython: $PYVER\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USER\n\thost set: $HOSTNAME\n\";source $ENVSRC")"
 
     #/bin/bash  -c "echo -e \"\nAndroid build environment has been setup:\n\tpython: $(python --version 2>&1)\n\tuse ccache: $USE_CCACHE\n\tJAVA_HOME: $JAVA_HOME\n\tTW_DEVICE_VERSION: $TW_DEVICE_VERSION\n\tbuild user: $USER\n\thost set: $HOSTNAME\n\"; \
      #          $SHELL --rcfile $ENVSRC"
