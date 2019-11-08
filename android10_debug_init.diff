@@ -1,0 +1,191 @@
+
+project system/core/
+diff --git a/system/core/init/Android.mk b/system/core/init/Android.mk
+index c4f7d34..6fea638 100644
+--- a/system/core/init/Android.mk
++++ b/system/core/init/Android.mk
+@@ -10,7 +10,7 @@ ifneq (,$(filter userdebug eng,$(TARGET_BUILD_VARIANT)))
+ init_options += \
+     -DALLOW_LOCAL_PROP_OVERRIDE=1 \
+     -DALLOW_PERMISSIVE_SELINUX=1 \
+-    -DREBOOT_BOOTLOADER_ON_PANIC=1 \
++    -DREBOOT_BOOTLOADER_ON_PANIC=0 \
+     -DWORLD_WRITABLE_KMSG=1 \
+     -DDUMP_ON_UMOUNT_FAILURE=1
+ else
+diff --git a/system/core/init/first_stage_init.cpp b/system/core/init/first_stage_init.cpp
+index 2b89940..2a03a15 100644
+--- a/system/core/init/first_stage_init.cpp
++++ b/system/core/init/first_stage_init.cpp
+@@ -130,7 +130,6 @@ int FirstStageMain(int argc, char** argv) {
+     CHECKCALL(setgroups(arraysize(groups), groups));
+     CHECKCALL(mount("sysfs", "/sys", "sysfs", 0, NULL));
+     CHECKCALL(mount("selinuxfs", "/sys/fs/selinux", "selinuxfs", 0, NULL));
+-
+     CHECKCALL(mknod("/dev/kmsg", S_IFCHR | 0600, makedev(1, 11)));
+ 
+     if constexpr (WORLD_WRITABLE_KMSG) {
+@@ -167,6 +166,9 @@ int FirstStageMain(int argc, char** argv) {
+                     "mode=0755,uid=0,gid=0"));
+ #undef CHECKCALL
+ 
++    auto result = WriteFile("/sys/class/leds/green/brightness", "0");
++    result = WriteFile("/sys/class/leds/blue/brightness", "0");
++    result = WriteFile("/sys/class/leds/red/brightness", "0");
+     SetStdioToDevNull(argv);
+     // Now that tmpfs is mounted on /dev and we have /dev/kmsg, we can actually
+     // talk to the outside world...
+@@ -175,20 +177,26 @@ int FirstStageMain(int argc, char** argv) {
+     if (!errors.empty()) {
+         for (const auto& [error_string, error_errno] : errors) {
+             LOG(ERROR) << error_string << " " << strerror(error_errno);
++	    //char *myerrno = strerror(error_errno);
++	    //result = WriteFile("/cache/init_error_" + myerrno + ".log", error_string);
++	    result = WriteFile("/cache/init_error.log", error_string);
+         }
+         LOG(FATAL) << "Init encountered errors starting first stage, aborting";
+     }
+ 
+     LOG(INFO) << "init first stage started!";
++    result = WriteFile("/cache/init_start.log", "first stage started");
+ 
+     auto old_root_dir = std::unique_ptr<DIR, decltype(&closedir)>{opendir("/"), closedir};
+     if (!old_root_dir) {
+         PLOG(ERROR) << "Could not opendir(\"/\"), not freeing ramdisk";
++	result = WriteFile("/cache/init.old_root_dir.log", "Could not opendir, not freeing ramdisk");
+     }
+ 
+     struct stat old_root_info;
+     if (stat("/", &old_root_info) != 0) {
+         PLOG(ERROR) << "Could not stat(\"/\"), not freeing ramdisk";
++	result = WriteFile("/cache/init.old_root_info.log", "1 not freeing ramdisk");
+         old_root_dir.reset();
+     }
+ 
+@@ -209,19 +217,21 @@ int FirstStageMain(int argc, char** argv) {
+         if (!fs::copy_file("/adb_debug.prop", kDebugRamdiskProp, ec) ||
+             !fs::copy_file("/userdebug_plat_sepolicy.cil", kDebugRamdiskSEPolicy, ec)) {
+             LOG(ERROR) << "Failed to setup debug ramdisk";
++	    result = WriteFile("/cache/init.force_debuggable.log", "Failed to setup debug ramdisk");
+         } else {
+             // setenv for second-stage init to read above kDebugRamdisk* files.
+             setenv("INIT_FORCE_DEBUGGABLE", "true", 1);
+         }
+     }
+-
+     if (!DoFirstStageMount()) {
+         LOG(FATAL) << "Failed to mount required partitions early ...";
++	result = WriteFile("/cache/init.DoFirstStageMount.log", "Failed to mount required partitions early ...");
+     }
+ 
+     struct stat new_root_info;
+     if (stat("/", &new_root_info) != 0) {
+         PLOG(ERROR) << "Could not stat(\"/\"), not freeing ramdisk";
++	result = WriteFile("/cache/init.new_root_info.log", "not freeing ramdisk");
+         old_root_dir.reset();
+     }
+ 
+@@ -235,13 +245,27 @@ int FirstStageMain(int argc, char** argv) {
+     uint64_t start_ms = start_time.time_since_epoch().count() / kNanosecondsPerMillisecond;
+     setenv("INIT_STARTED_AT", std::to_string(start_ms).c_str(), 1);
+ 
++    result = WriteFile("/sys/class/leds/blue/brightness", "0");
++    result = WriteFile("/sys/class/leds/red/brightness", "0");
++    result = WriteFile("/sys/class/leds/green/brightness", "255");
++    sleep(1);
++    result = WriteFile("/cache/init_end.log", "first stage finished, starting selinux_setup");
++    sleep(3);
++    // enforce a kernel panic
++    //result = WriteFile("/proc/sysrq-trigger", "c");
++
+     const char* path = "/system/bin/init";
++    //const char* path = "/init";
+     const char* args[] = {path, "selinux_setup", nullptr};
+     execv(path, const_cast<char**>(args));
+ 
+     // execv() only returns if an error happened, in which case we
+     // panic and never fall through this conditional.
+     PLOG(FATAL) << "execv(\"" << path << "\") failed";
++    result = WriteFile("/sys/class/leds/blue/brightness", "255");
++    result = WriteFile("/sys/class/leds/red/brightness", "255");
++    result = WriteFile("/sys/class/leds/green/brightness", "255");
++    sleep(3);
+ 
+     return 1;
+ }
+diff --git a/system/core/init/first_stage_mount.cpp b/system/core/init/first_stage_mount.cpp
+index 3e76556..b87f24d 100644
+--- a/system/core/init/first_stage_mount.cpp
++++ b/system/core/init/first_stage_mount.cpp
+@@ -495,6 +495,10 @@ bool FirstStageMount::MountPartition(const Fstab::iterator& begin, bool erase_sa
+ // this case, we mount system first then pivot to it.  From that point on,
+ // we are effectively identical to a system-as-root device.
+ bool FirstStageMount::TrySwitchSystemAsRoot() {
++    auto result = WriteFile("/sys/class/leds/green/brightness", "0");
++    result = WriteFile("/sys/class/leds/red/brightness", "255");
++    result = WriteFile("/sys/class/leds/blue/brightness", "0");
++    sleep(3);
+     auto metadata_partition = std::find_if(fstab_.begin(), fstab_.end(), [](const auto& entry) {
+         return entry.mount_point == "/metadata";
+     });
+@@ -520,7 +524,6 @@ bool FirstStageMount::TrySwitchSystemAsRoot() {
+         PLOG(ERROR) << "Failed to mount /system";
+         return false;
+     }
+-
+     return true;
+ }
+ 
+diff --git a/system/core/init/main.cpp b/system/core/init/main.cpp
+index 2ce46ef..8a68f77 100644
+--- a/system/core/init/main.cpp
++++ b/system/core/init/main.cpp
+@@ -20,6 +20,7 @@
+ #include "selinux.h"
+ #include "subcontext.h"
+ #include "ueventd.h"
++#include "util.h"
+ 
+ #include <android-base/logging.h>
+ 
+@@ -53,6 +54,11 @@ int main(int argc, char** argv) {
+     __asan_set_error_report_callback(AsanReportCallback);
+ #endif
+ 
++    auto result = WriteFile("/sys/class/leds/blue/brightness", "0");
++    result = WriteFile("/sys/class/leds/red/brightness", "255");
++    result = WriteFile("/sys/class/leds/green/brightness", "255");
++    sleep(3);
++
+     if (!strcmp(basename(argv[0]), "ueventd")) {
+         return ueventd_main(argc, argv);
+     }
+diff --git a/system/core/init/reboot_utils.cpp b/system/core/init/reboot_utils.cpp
+index d1a712f..e79b634 100644
+--- a/system/core/init/reboot_utils.cpp
++++ b/system/core/init/reboot_utils.cpp
+@@ -32,7 +32,7 @@
+ namespace android {
+ namespace init {
+ 
+-static std::string init_fatal_reboot_target = "bootloader";
++static std::string init_fatal_reboot_target = "recovery";
+ 
+ void SetFatalRebootTarget() {
+     std::string cmdline;
+diff --git a/system/core/init/selinux.cpp b/system/core/init/selinux.cpp
+index 86238b4..9b13063 100644
+--- a/system/core/init/selinux.cpp
++++ b/system/core/init/selinux.cpp
+@@ -517,6 +517,11 @@ int SelinuxGetVendorAndroidVersion() {
+ 
+ // This function initializes SELinux then execs init to run in the init SELinux context.
+ int SetupSelinux(char** argv) {
++    auto result = WriteFile("/sys/class/leds/green/brightness", "102");
++    result = WriteFile("/sys/class/leds/blue/brightness", "255");
++    result = WriteFile("/sys/class/leds/red/brightness", "178");
++    sleep(3);
++
+     InitKernelLogging(argv);
+ 
+     if (REBOOT_BOOTLOADER_ON_PANIC) {
