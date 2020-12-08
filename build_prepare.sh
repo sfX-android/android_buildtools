@@ -3,11 +3,13 @@
 
 echo -e "\nThis sets the OTA package path to /tmp and depending on your selection\nmake an insecure build as well.\n\n"
 
+BOARDCNFMK="$1"
+
 F_CHECK(){
 	echo -e "\nYour current settings:\n"
-	echo -e "OTA path:\n$(grep 'INTERNAL_OTA_PACKAGE_TARGET :=' build/core/Makefile)"
+	echo -e "OTA path (build/core/Makefile):\n$(grep 'INTERNAL_OTA_PACKAGE_TARGET :=' build/core/Makefile)"
 	echo -e "\ninsecure state (vendor/lineage/config/common.mk):\n$(grep "secure=" vendor/lineage/config/common.mk)"
-        echo -e "\nselinux state (device/lge/g4-common/BoardConfigCommon.mk):\n$(grep 'androidboot.selinux=' device/lge/g4-common/BoardConfigCommon.mk)"
+        echo -e "\nselinux state (device/lge/g4-common/BoardConfigCommon.mk):\n$(grep 'androidboot.selinux=' $BOARDCNFMK)"
 	echo
 }
 
@@ -15,7 +17,7 @@ F_INSEC(){
     echo -e "... prepare insecure building:"
     sed -i "s/ro.adb.secure=./ro.adb.secure=0/" vendor/lineage/config/common.mk
     echo -e "... set the build permissive..."
-    sed -i 's/androidboot.selinux=enforcing/androidboot.selinux=permissive/g' device/lge/g4-common/BoardConfigCommon.mk
+    sed -i 's/androidboot.selinux=enforcing/androidboot.selinux=permissive/g' $BOARDCNFMK
     F_CHECK
 }
 
@@ -26,7 +28,7 @@ F_INSEC_OFF(){
     cd $CPWD
     echo -e "vendor/lineage/config/common.mk:\t$(grep secure= vendor/lineage/config/common.mk |tr '\n' ,)\n"
     echo -e "... set the build to enforcing.."
-    sed -i 's/androidboot.selinux=permissive/androidboot.selinux=enforcing/g' device/lge/g4-common/BoardConfigCommon.mk
+    sed -i 's/androidboot.selinux=permissive/androidboot.selinux=enforcing/g' $BOARDCNFMK
     F_CHECK
 }
 
@@ -40,11 +42,17 @@ F_TMP(){
 }
 
 F_HELP(){
-	echo -e "\nValid args: insecure, setpath, check, resetall"
+	echo -e "\nUSAGE / HELP"
+	echo -e "----------------------\n"
+	echo -e "Mandatory arg:\t<PATH-TO-MK> (the full device tree path containing the mk file which defines the cmdline)"
+	echo -e "Action args:\tinsecure, setpath, check, resetall"
 	echo -e "\nmultiple options are allowed for: insecure and setpath but NOT for resetinsecure or resetall\n\n"
 	exit 9
 
 }
+
+[ ! -f "$BOARDCNFMK" ] && echo -e "ERROR: $BOARDCNFMK is not a file!\n\n" && F_HELP && exit 99
+shift
 
 case $1 in 
     help|-help|--help)
