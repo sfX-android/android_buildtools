@@ -1,6 +1,7 @@
 #!/bin/bash
 
-VENDOR_DIR=$PWD
+#VENDOR_DIR=$PWD
+VENDOR_DIR=$(dirname $0)
 KEYS_DIR=user-keys
 _USR=$USER_NAME
 [ -z $_USR ] && echo "ERROR: missing USER_NAME var!" && exit 3
@@ -23,3 +24,7 @@ done
 # make readable format for manual verifier
 openssl rsa -inform DER -outform PEM -in $KEYS_DIR/releasekey.pk8 -out $KEYS_DIR/releasekey.pem
 openssl rsa -in $KEYS_DIR/releasekey.pem -pubout > $KEYS_DIR/releasekey.pub
+
+# make AVB required stuff
+openssl x509 -outform DER -in $KEYS_DIR/releasekey.x509.pem -out $KEYS_DIR/releasekey.x509.der
+openssl pkcs8 -in $KEYS_DIR/releasekey.pk8 -inform DER -out $KEYS_DIR/releasekey.key -nocrypt
