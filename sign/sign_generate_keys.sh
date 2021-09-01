@@ -10,9 +10,15 @@ KEYS_SUBJECT='/C=DE/ST=Somewhere/L=Somewhere/O='${_USR}'/OU=e/CN=eOS/emailAddres
 
 [ ! -d $KEYS_DIR ] && mkdir -p $KEYS_DIR
 
-for c in releasekey platform shared media; do
-      echo ">> [$(date)]  Generating $c..."
-      ${VENDOR_DIR}/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
+for c in releasekey platform shared media networkstack; do
+    for k in pem key pk8 x509.pem der;do
+	if [ -f "$KEYS_DIR/${c}.${k}" ];then
+	    echo "WARNING: $c.${k} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
+	    continue 2
+	fi
+    done
+    echo ">> [$(date)]  Generating $c..."
+    ${VENDOR_DIR}/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
 done
 for c in cyngn{-priv,}-app testkey; do
     for e in pk8 x509.pem; do
