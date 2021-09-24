@@ -132,12 +132,19 @@ def setup_project(args, verbose=False):
         msg = "Something cheesy"
         addr = "https://review.aosip.dev"
         base_branch = args.B if args.B is not None else "eleven"
+    elif args.R is not None:
+        msg = "Who dis?"
+        addr = args.R
+        base_branch = args.B
     else:
         msg = "Meh,its just ice cold"
         addr = "https://gerrit.aicp-rom.com"
         base_branch = args.B if args.B is not None else "r11.1"
     if verbose:
         print(Fore.YELLOW, f"\b{msg}")
+    if not base_branch:
+        print("Need to specify a branch,use -B argument")
+        sys.exit(0)
 
     return addr, base_branch
 
