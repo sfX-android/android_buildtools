@@ -124,18 +124,18 @@ def setup_project(args, verbose=False):
     if args.R == "los":
         msg = "Seems,serious"
         addr = "https://review.lineageos.org"
-        base_branch = "lineage-16.0" if args.B is not None else "lineage-18.1"
+        base_branch = args.B if args.B is not None else "lineage-18.1"
         # Kill the blocklist if searching LineageOS gerrit
         global BLOCK_LIST
         BLOCK_LIST = []
     elif args.R == "owl":
         msg = "Something cheesy"
         addr = "https://review.aosip.dev"
-        base_branch = "ten" if args.B is not None else "eleven"
+        base_branch = args.B if args.B is not None else "eleven"
     else:
         msg = "Meh,its just ice cold"
         addr = "https://gerrit.aicp-rom.com"
-        base_branch = "q10.0" if args.B is not None else "r11.1"
+        base_branch = args.B if args.B is not None else "r11.1"
     if verbose:
         print(Fore.YELLOW, f"\b{msg}")
 
