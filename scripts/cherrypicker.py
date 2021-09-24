@@ -23,10 +23,10 @@ def show_banner():
     print(STARS)
 
 
-def check_excludes(args, ctopic):
+def check_excludes(args, c_topic):
     # Split excludes into a list so that we can skip multiple topics
     exclusions = list(args.E.split(",") if args.E is not None else "")
-    if exclusions is not None and ctopic in exclusions:
+    if exclusions is not None and c_topic in exclusions:
         return False
 
     return True
@@ -36,7 +36,7 @@ def check_excludes(args, ctopic):
 PROJECTS = {}
 TOPICS = []
 # Make a copy of the blocked repos so I can modify it if required
-BLOCKLIST = BLACKLIST
+BLOCK_LIST = BLACKLIST
 # Set of changes which will be skipped in all cases
 DNM = [
 ]
@@ -49,7 +49,7 @@ def get_query(url, query):
 
 # Print help and wait for a input
 # if args.H is not None:
-#     showhelp()
+#     show_help()
 def show_help():
     print(" Cherrypicker")
     print("")
@@ -92,9 +92,9 @@ def check_mergeable(change):
         return False
 
 
-def get_topic(mchange):
+def get_topic(m_change):
     try:
-        return mchange["topic"]
+        return m_change["topic"]
     except KeyError:
         return None
 
@@ -126,8 +126,8 @@ def setup_project(args, verbose=False):
         addr = "https://review.lineageos.org"
         base_branch = "lineage-16.0" if args.B is not None else "lineage-18.1"
         # Kill the blocklist if searching LineageOS gerrit
-        global BLOCKLIST
-        BLOCKLIST = []
+        global BLOCK_LIST
+        BLOCK_LIST = []
     elif args.R == "owl":
         msg = "Something cheesy"
         addr = "https://review.aosip.dev"
@@ -147,13 +147,13 @@ def set_query(args):
         return "/changes/?q=" + args.Q
     query = "/changes/?q=status:open"
     if args.T is None:
-        finalq = query
+        final_q = query
     else:
-        qtopic = " topic:" + args.T
-        finalq = query + qtopic
+        q_topic = " topic:" + args.T
+        final_q = query + q_topic
     if args.D:
-        print(finalq)
-    return finalq
+        print(final_q)
+    return final_q
 
 
 def get_changes(args):
@@ -210,11 +210,11 @@ def set_start(args):
         return args.S
     # platform_manifest gets only changed once in a while
     gerrit_addr, current_branch = setup_project(args)
+    full_query = f"/changes/?q=project:AICP/platform_manifest status:merged branch:{current_branch}"
     if "aicp" in gerrit_addr and not args.S:  # Get the last merged important change
-        platfom_changes = get_query(gerrit_addr,
-                                    f"/changes/?q=project:AICP/platform_manifest status:merged branch:{current_branch}")
-        last_patch = platfom_changes[5]["_number"]
-        last_patch_change = platfom_changes[5]["subject"]
+        platform_changes = get_query(gerrit_addr, full_query)
+        last_patch = platform_changes[5]["_number"]
+        last_patch_change = platform_changes[5]["subject"]
         print(Fore.RED, f"\b{last_patch} {last_patch_change} set as start for commit filter\n")
         args.S = last_patch
         return last_patch
@@ -243,9 +243,9 @@ def parse_changes(args, changes, gerrit_branch):
         subject = change["subject"]
         topic = get_topic(change)
         project = change["project"]
-        canmerge = check_mergeable(change)
+        can_merge = check_mergeable(change)
         if number >= set_start(args) and gerrit_branch in change["branch"]:
-            if not any(item in project.lower() for item in BLOCKLIST) or any(
+            if not any(item in project.lower() for item in BLOCK_LIST) or any(
                     item in project.lower() for item in WHITELIST):
                 if gerrit_branch != change["branch"]:
                     change = adjust_for_qcom(change)
@@ -253,12 +253,12 @@ def parse_changes(args, changes, gerrit_branch):
                     print(
                         Fore.GREEN, f"\b{str(index + 1).zfill(3)}/{total}",
                         Fore.BLUE, str(number).rjust(digits),
-                        Fore.CYAN, str(canmerge).ljust(7),
+                        Fore.CYAN, str(can_merge).ljust(7),
                         Fore.LIGHTBLUE_EX, subject[:55].ljust(55),
                         Fore.YELLOW, project[-20:].ljust(20), "|",
                         Fore.MAGENTA, topic if topic else ""
                     )
-                    if (not check_excludes(args, topic)) or (not canmerge and not args.M):
+                    if (not check_excludes(args, topic)) or (not can_merge and not args.M):
                         skipped += 1
                         continue
                     if topic not in TOPICS and topic is not None:
@@ -283,7 +283,7 @@ def parse_changes(args, changes, gerrit_branch):
 
 
 def present_changes(args, skipped, merged):
-    topick = 0
+    to_pick = 0
     cherry_picked = 0
     numbers = ""
     fwb = "AICP/frameworks_base"
@@ -298,7 +298,7 @@ def present_changes(args, skipped, merged):
         print(Fore.YELLOW, "\brepopick", Fore.RED, "\b-g", PROJECTS[project].get("gerrit", "\b" * 4),
               "-f" if merged else "\b", "-P", PROJECTS[project]["path"],
               " ".join(str(x) for x in change_numbers), Fore.CYAN)
-        topick += len(change_numbers)
+        to_pick += len(change_numbers)
         if args.R is None and fwb in project:
             continue
         cherry_picked = count if count > cherry_picked else cherry_picked
@@ -315,7 +315,7 @@ def present_changes(args, skipped, merged):
     if TOPICS:
         print(Fore.GREEN, "\brepopick -t", " ".join(item for item in TOPICS if item))
         print(DASHES)
-    print(Fore.MAGENTA, f"\b{topick} commits to pick")
+    print(Fore.MAGENTA, f"\b{to_pick} commits to pick")
     print(Fore.BLUE, f"\b{skipped} commits skipped")
     print(DASHES)
 
