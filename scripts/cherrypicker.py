@@ -55,19 +55,19 @@ def show_help():
     print("")
 
 
-def check_upstream(keyword, open_changes):
-    status = "open" if open_changes else "merged"
-    if keyword == "ALL":
+def check_upstream(args):
+    status = "open" if args.O else "merged"
+    if args.C == "ALL":
         projects = UPSTREAM
     else:
-        projects = [project for project in UPSTREAM if keyword in project.lower()]
+        projects = [project for project in UPSTREAM if args.C in project.lower()]
 
     for upstream_project in projects:
         upstream_numbers = ""
-        upstream_addr = "https://review.lineageos.org"
+        upstream_addr, upstream_brnch = setup_project(args)
         upstream_project = f"android_{upstream_project}"
         # query = "/q/status:merged branch:lineage-15.1 project:LineageOS/android_{0}".format(project)
-        query = f"/changes/?q=project:LineageOS/{upstream_project}%20status:{status}%20branch:lineage-17.1"
+        query = f"/changes/?q=project:LineageOS/{upstream_project}%20status:{status}%20branch:{upstream_brnch}"
         upstream_changes = get_query(upstream_addr, query)[:15]
         print(Fore.BLUE, upstream_project)
         for upstream_change in reversed(upstream_changes):
@@ -357,7 +357,9 @@ def repo_pick():
     args = parse_arguments()
     set_defaults(args)
     if args.C is not None:
-        check_upstream(args.C, args.O)
+        args.R = "los"
+        args.B = None
+        check_upstream(args)
     changes, branch = get_changes(args)
     skipped, merged = parse_changes(args, changes, branch)
     present_changes(args, skipped, merged)
