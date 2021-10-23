@@ -336,7 +336,7 @@ def parse_arguments():
     parser.add_argument("-S", type=int, help="Commit to start searching from")
     parser.add_argument("-B", help="Branch to search for")
     parser.add_argument("-D", action="store_true", help="Debug mode")
-    parser.add_argument("-M", action="store_true", help="Check mergability")
+    parser.add_argument("-M", action="store_true", default=True, help="Check mergeability")
     parser.add_argument("-C", const="ALL", nargs='?', help="Check upstream for any new changes")
     parser.add_argument("-O", action="store_true", help="Search upstream for open changes")
     parser.add_argument("-Q", help="Query to search for")
@@ -349,7 +349,6 @@ def parse_arguments():
 
 # Always keep this method above main, for better control
 def set_defaults(args):
-    args.M = True
     assert args is not None
 
 
