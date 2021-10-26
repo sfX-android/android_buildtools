@@ -16,7 +16,7 @@ BLACKLIST = [
     "partsbin",
     "deviceparts",
     "messaging",
-    "jamesdspmanager"
+    "jamesdspmanager",
 ]
 UPSTREAM = [
     "art",
@@ -59,12 +59,12 @@ UPSTREAM = [
     "system_sepolicy",
     "system_vold",
     "system_update_engine",
-    "vendor_lineage"
+    "vendor_lineage",
 ]
 # Strings in whitelist should be in lower case
 WHITELIST = [
     "vendor_du",
     "vendor_lineage",
     "_support",
-    "telephonyprovider"
+    "telephonyprovider",
 ]
