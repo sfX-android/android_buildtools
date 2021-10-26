@@ -172,7 +172,7 @@ def get_changes(args):
     total = len(changes)
     if total > 200 and args.S is None:
         print(f"{total} Changes \nBetter to add a start number or streamline search")
-        if input("Set it from manifest ?").lower() == 'y':
+        if input("Set it from manifest ?").lower() == "y":
             args.S = set_start(args)
             changes = get_query(gerrit_addr, query)
         else:
@@ -270,7 +270,7 @@ def parse_changes(args, changes, gerrit_branch):
                         continue
                     if topic not in TOPICS and topic is not None:
                         TOPICS.append(topic)
-                    if change['status'] == "MERGED":
+                    if change["status"] == "MERGED":
                         merged = True
                     if project not in PROJECTS:
                         append_projects(args, change)
@@ -337,11 +337,11 @@ def parse_arguments():
     parser.add_argument("-B", help="Branch to search for")
     parser.add_argument("-D", action="store_true", help="Debug mode")
     parser.add_argument("-M", action="store_true", default=True, help="Check mergeability")
-    parser.add_argument("-C", const="ALL", nargs='?', help="Check upstream for any new changes")
+    parser.add_argument("-C", const="ALL", nargs="?", help="Check upstream for any new changes")
     parser.add_argument("-O", action="store_true", help="Search upstream for open changes")
     parser.add_argument("-Q", help="Query to search for")
     parser.add_argument("-E", help="Exclude topics")
-    parser.add_argument('-F', nargs='?', const=1, type=int, default=22, help="No of Commits to check for on fwb")
+    parser.add_argument("-F", nargs="?", const=1, type=int, default=22, help="No of Commits to check for on fwb")
 
     # parser.add_argument("-h", help="Show the f***ing help and exit")
     return parser.parse_args()
