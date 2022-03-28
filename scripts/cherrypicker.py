@@ -228,6 +228,8 @@ def set_start(args):
     full_query = f"/changes/?q=project:AICP/platform_manifest status:merged branch:{current_branch}"
     if "aicp" in gerrit_addr and not args.S:  # Get the last merged important change
         platform_changes = get_query(gerrit_addr, full_query)
+        if not platform_changes:
+            return 0
         last_patch = platform_changes[5]["_number"]
         last_patch_change = platform_changes[5]["subject"]
         print(Fore.RED, f"\b{last_patch} {last_patch_change} set as start for commit filter\n")
@@ -318,7 +320,7 @@ def present_changes(args, skipped, merged):
             continue
         cherry_picked = count if count > cherry_picked else cherry_picked
         numbers += " ".join(str(x) for x in change_numbers) + " "
-    if args.R is None:
+    if args.R is None and cherry_picked > 0:
         print(DASHES)
         pick_string = f"repopick {numbers}-c {cherry_picked}"
         print(Fore.CYAN, f"\b{pick_string}")
@@ -326,7 +328,7 @@ def present_changes(args, skipped, merged):
         if PROJECTS.get(fwb, None):  # Not all queries may have a change in fwb
             fwb_changes = PROJECTS[fwb]["numbers"]
             print(Fore.CYAN, "\brepopick", " ".join(str(x) for x in fwb_changes), "-c", args.F + len(fwb_changes))
-    print(DASHES)
+        print(DASHES)
     if TOPICS:
         print(Fore.GREEN, "\brepopick -t", " ".join(item for item in TOPICS if item))
         print(DASHES)
