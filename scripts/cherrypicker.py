@@ -115,6 +115,14 @@ def adjust_for_qcom(change):
         name = name.replace("qcom_", f"qcom-caf_{board}_")
         change["project"] = name
         return change
+    if "-legacy-um" in branch:
+        name = name.replace("sepolicy", "sepolicy-legacy-um")
+        change["project"] = name
+        return change
+    if "-legacy" in branch:
+        name = name.replace("sepolicy", "sepolicy-legacy")
+        change["project"] = name
+        return change
     print("Caught a new one to adjust for path", branch)
     return change
 
