@@ -1,7 +1,6 @@
-=============================
-Android Blob Utility
+# Android Blob Utility
+
 by JackpotClavin
-=============================
 
 The Android Blob Utility is a program designed to make developing AOSP-based
 ROMs easier to develop. What is does is it allows the developer to pick
