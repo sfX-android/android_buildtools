@@ -40,3 +40,7 @@ made to get a clean state before building. superseeded by Jenkins later .. and n
 ### universalbuilder.sh
 
 made some decades ago to build for several devices which all have their own shit. Parts of it can be found in [extendrom](https://github.com/sfX-android/android_vendor_extendrom) now.
+
+### blobutil/
+
+superseeded by blobs.sh (see above). it was a way to find dependencies of blobs.
