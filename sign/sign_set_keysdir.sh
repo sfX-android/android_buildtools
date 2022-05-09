@@ -1,3 +1,10 @@
+#!/bin/bash
+################################################################################################
+#
+# Prepare <vendor> dir to use a custom signing key
+#
+################################################################################################
+
 vendor=$1
 androidver=$2
 
@@ -5,13 +12,14 @@ androidver=$2
 [ -z "$androidver" ] && androidver=0
 
 # translate ROM specific versions
-if [ $vendor == "lineage" ];then
+if [ "$vendor" == "lineage" ];then
     case $androidver in
 	14*) androidver=7 ;;
 	15*) androidver=8 ;;
 	16*) androidver=9 ;;
 	17*) androidver=10 ;;
 	18*) androidver=11 ;;
+	19*) androidver=12 ;;
     esac
 fi
 
