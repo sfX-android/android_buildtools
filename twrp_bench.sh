@@ -1,8 +1,8 @@
 #!/bin/bash -
 ###############################################################################################################
 #
-# Get configuration not accessible by splunk btool
-# Copyright: Thomas Fischer <mail@se-di.de>
+# Copyright: 2016-2022 steadfasterX <steadfasterX | at - gmail DOT com>
+#
 # Licensed under the LGPL v3 or later:
 #
 #    This program is free software: you can redistribute it and/or modify
