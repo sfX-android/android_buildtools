@@ -4,6 +4,17 @@ androidver=$2
 [ -z "$vendor" ] && vendor=lineage
 [ -z "$androidver" ] && androidver=0
 
+# translate ROM specific versions
+if [ $vendor == "lineage" ];then
+    case $androidver in
+	14*) androidver=7 ;;
+	15*) androidver=8 ;;
+	16*) androidver=9 ;;
+	17*) androidver=10 ;;
+	18*) androidver=11 ;;
+    esac
+fi
+
 [ ! -f vendor/$vendor/config/common.mk ] && echo "vendor/$vendor/config/common.mk does not exists! ABORTED" && exit 9
 
 grep -q "PRODUCT_DEFAULT_DEV_CERTIFICATE := user-keys/releasekey" vendor/$vendor/config/common.mk
