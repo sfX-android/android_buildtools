@@ -16,7 +16,7 @@ if [ $? -ne 0 ];then
     sed -i "1s;^;PRODUCT_OTA_PUBLIC_KEYS := user-keys/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_OTA_PUBLIC_KEYS set"
 fi
 
-# android 10 will fail when using PRODUCT_EXTRA_RECOVERY_KEYS
+# android =< 10 will fail when using PRODUCT_EXTRA_RECOVERY_KEYS
 if [ $androidver -lt 10 ];then
     grep -q "PRODUCT_EXTRA_RECOVERY_KEYS := user-keys/releasekey" vendor/$vendor/config/common.mk
     if [ $? -ne 0 ];then

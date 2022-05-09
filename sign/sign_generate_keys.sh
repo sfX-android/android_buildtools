@@ -10,7 +10,7 @@ KEYS_SUBJECT='/C=DE/ST=Somewhere/L=Somewhere/O='${_USR}'/OU=e/CN=eOS/emailAddres
 
 [ ! -d $KEYS_DIR ] && mkdir -p $KEYS_DIR
 
-for c in releasekey platform shared media networkstack; do
+for c in releasekey platform shared media networkstack verity; do
     for k in pem key pk8 x509.pem der;do
 	if [ -f "$KEYS_DIR/${c}.${k}" ];then
 	    echo "WARNING: $c.${k} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
@@ -34,3 +34,4 @@ openssl rsa -in $KEYS_DIR/releasekey.pem -pubout > $KEYS_DIR/releasekey.pub
 # make AVB required stuff
 openssl x509 -outform DER -in $KEYS_DIR/releasekey.x509.pem -out $KEYS_DIR/releasekey.x509.der
 openssl pkcs8 -in $KEYS_DIR/releasekey.pk8 -inform DER -out $KEYS_DIR/releasekey.key -nocrypt
+external/avb/avbtool extract_public_key --key $KEYS_DIR/releasekey.key --output $KEYS_DIR/pkmd.key
