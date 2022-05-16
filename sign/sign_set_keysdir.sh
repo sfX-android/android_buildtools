@@ -17,9 +17,9 @@ if [ "$vendor" == "lineage" ];then
 	14*) androidver=7 ;;
 	15*) androidver=8 ;;
 	16*) androidver=9 ;;
-	17*) androidver=10 ;;
-	18*) androidver=11 ;;
-	19*) androidver=12 ;;
+	17*|v*-q) androidver=10 ;;
+	18*|v*-r) androidver=11 ;;
+	19*|v*-s) androidver=12 ;;
     esac
 fi
 
@@ -36,7 +36,7 @@ if [ $? -ne 0 ];then
 fi
 
 # android =< 10 will fail when using PRODUCT_EXTRA_RECOVERY_KEYS
-if [ $androidver -lt 10 ];then
+if [ "$androidver" -lt 10 ];then
     grep -q "PRODUCT_EXTRA_RECOVERY_KEYS := user-keys/releasekey" vendor/$vendor/config/common.mk
     if [ $? -ne 0 ];then
 	sed -i "1s;^;PRODUCT_EXTRA_RECOVERY_KEYS := user-keys/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_EXTRA_RECOVERY_KEYS set"
