@@ -9,6 +9,8 @@ vendor=$1
 androidver=$2
 
 [ -z "$vendor" ] && vendor=lineage
+[ "$vendor" == "eos" ] && vendor=lineage
+
 [ -z "$androidver" ] && androidver=0
 
 # translate ROM specific versions
@@ -16,7 +18,7 @@ if [ "$vendor" == "lineage" ];then
     case $androidver in
 	14*) androidver=7 ;;
 	15*) androidver=8 ;;
-	16*) androidver=9 ;;
+	16*|v*-p) androidver=9 ;;
 	17*|v*-q) androidver=10 ;;
 	18*|v*-r) androidver=11 ;;
 	19*|v*-s) androidver=12 ;;
