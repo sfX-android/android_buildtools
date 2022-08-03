@@ -20,12 +20,12 @@ androidver=$2
 # translate ROM specific versions
 if [ "$vendor" == "lineage" ];then
     case $androidver in
-	14*) androidver=7 ;;
-	15*) androidver=8 ;;
-	16*|v*-p) androidver=9 ;;
-	17*|v*-q) androidver=10 ;;
-	18*|v*-r) androidver=11 ;;
-	19*|v*-s) androidver=12 ;;
+	nougat|14*) androidver=7 ;;
+	oreo|15*) androidver=8 ;;
+	pie|16*|v*-p) androidver=9 ;;
+	Q|17*|v*-q) androidver=10 ;;
+	R|18*|v*-r) androidver=11 ;;
+	S|19*|v*-s) androidver=12 ;;
     esac
 fi
 
