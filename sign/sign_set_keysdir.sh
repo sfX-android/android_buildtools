@@ -5,11 +5,15 @@
 #
 ################################################################################################
 
+# important for determining version number translation & vendor path
 vendor=$1
+
+# can be just "11" or "a11" or "android11" or "android-11" .. anything except digits will be removed
 androidver=$2
 
 [ -z "$vendor" ] && vendor=lineage
 [ "$vendor" == "eos" ] && vendor=lineage
+[ "$vendor" == "e-os" ] && vendor=lineage
 
 [ -z "$androidver" ] && androidver=0
 
@@ -25,6 +29,8 @@ if [ "$vendor" == "lineage" ];then
     esac
 fi
 
+normalizedver=$(echo "$androidver" | egrep -o "[0-9]+")
+
 [ ! -f vendor/$vendor/config/common.mk ] && echo "vendor/$vendor/config/common.mk does not exists! ABORTED" && exit 9
 
 grep -q "PRODUCT_DEFAULT_DEV_CERTIFICATE := user-keys/releasekey" vendor/$vendor/config/common.mk
@@ -38,7 +44,7 @@ if [ $? -ne 0 ];then
 fi
 
 # android =< 10 will fail when using PRODUCT_EXTRA_RECOVERY_KEYS
-if [ "$androidver" -lt 10 ];then
+if [ "$normalizedver" -lt 10 ];then
     grep -q "PRODUCT_EXTRA_RECOVERY_KEYS := user-keys/releasekey" vendor/$vendor/config/common.mk
     if [ $? -ne 0 ];then
 	sed -i "1s;^;PRODUCT_EXTRA_RECOVERY_KEYS := user-keys/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_EXTRA_RECOVERY_KEYS set"
