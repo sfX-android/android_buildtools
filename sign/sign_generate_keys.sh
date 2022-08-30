@@ -10,7 +10,7 @@ KEYS_SUBJECT='/C=DE/ST=Somewhere/L=Somewhere/O='${_USR}'/OU=e/CN=eOS/emailAddres
 
 [ ! -d $KEYS_DIR ] && mkdir -p $KEYS_DIR
 
-for c in releasekey platform shared media networkstack verity; do
+for c in releasekey platform shared media networkstack verity sdk_sandbox bluetooth; do
     for k in pem key pk8 x509.pem der;do
 	if [ -f "$KEYS_DIR/${c}.${k}" ];then
 	    echo "WARNING: $c.${k} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
