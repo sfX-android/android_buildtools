@@ -1,8 +1,7 @@
 #!/bin/bash
 
-#VENDOR_DIR=$PWD
 VENDOR_DIR=$(dirname $0)
-KEYS_DIR=user-keys
+[ -z "$KEYS_DIR" ] && KEYS_DIR=user-keys
 _USR=$USER_NAME
 [ -z $_USR ] && echo "ERROR: missing USER_NAME var!" && exit 3
 
