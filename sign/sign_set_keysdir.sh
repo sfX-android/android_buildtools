@@ -11,9 +11,10 @@ vendor=$1
 # can be just "11" or "a11" or "android11" or "android-11" .. anything except digits will be removed
 androidver=$2
 
-[ -z "$vendor" ] && vendor=lineage
-[ "$vendor" == "eos" ] && vendor=lineage
-[ "$vendor" == "e-os" ] && vendor=lineage
+case "$vendor" in
+	lineage|eos|e-os) vendor=lineage ;;
+	graphene) echo "skipping signing mod bc of vendor: $vendor" ; exit 0;;
+esac
 
 [ -z "$androidver" ] && androidver=0
 
