@@ -136,10 +136,6 @@ def setup_project(args, verbose=False):
         # Kill the blocklist if searching LineageOS gerrit
         global BLOCK_LIST
         BLOCK_LIST = []
-    elif args.R == "owl":
-        msg = "Something cheesy"
-        addr = "https://review.aosip.dev"
-        base_branch = args.B if args.B is not None else "twelve"
     elif args.R is not None:
         msg = "Who dis?"
         addr = args.R
