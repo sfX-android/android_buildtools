@@ -155,13 +155,13 @@ def setup_project(args, verbose=False):
 
 def set_query(args):
     if args.Q is not None:
-        return "/changes/?q=" + args.Q
+        return f"/changes/?q={args.Q}"
     query = "/changes/?q=status:open"
     if args.T is None:
         final_q = query
     else:
-        q_topic = " topic:" + args.T
-        final_q = query + q_topic
+        q_topic = f" topic:{args.T}"
+        final_q = "".join([query, q_topic])
     if args.D:
         print(final_q)
     return final_q
