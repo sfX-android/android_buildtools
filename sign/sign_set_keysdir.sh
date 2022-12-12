@@ -28,10 +28,23 @@ if [ "$vendor" == "lineage" ];then
 	R|18*|v*-r) androidver=11 ;;
 	S|19*|v*-s) androidver=12 ;;
 	T|20*|v*-t) androidver=13 ;;
+	*) androidver=999;;
     esac
 fi
-
 normalizedver=$(echo "$androidver" | egrep -o "[0-9]+")
+
+# (re)create keys dir if specified
+if [ ! -z "$KEYS_DIR" ];then
+    if [ ! -L user-keys ]&&[ -d "user-keys" ];then
+	echo "WARNING: KEYS_DIR main path 'user-keys' is a directory - we expected a LINK instead!"
+      else
+	# WARNING: we have to ensure that a link has been removed before.
+	# otherwise (even when using ln -sf) a folder "keys" will be added within the link dir
+	rm user-keys
+	# Soong (Android 9+) complains if the signing keys are outside the build path
+	ln -s "$KEYS_DIR" user-keys
+      fi
+fi
 
 [ ! -f vendor/$vendor/config/common.mk ] && echo "vendor/$vendor/config/common.mk does not exists! ABORTED" && exit 9
 
