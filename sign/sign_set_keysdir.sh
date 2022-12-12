@@ -27,6 +27,7 @@ if [ "$vendor" == "lineage" ];then
 	Q|17*|v*-q) androidver=10 ;;
 	R|18*|v*-r) androidver=11 ;;
 	S|19*|v*-s) androidver=12 ;;
+	T|20*|v*-t) androidver=13 ;;
     esac
 fi
 
