@@ -12,6 +12,13 @@ Needed once only for creating your own signing keys:
 1. will create an AVB key needed for flashing on compatible devices (like Google's Pixel, OnePlus)
 
 Usage: `./sign_generate_keys.sh`
+Environment Variables:
+
+- `CERT_CN` : sets a custom certificate CN
+- `USER_NAME` : sets given username for certificate CN
+- `KEYS_DIR` : target directory where the keys should be stored
+- `KSIZE` : set keysize (allowed: 4096|8192), default is [here](https://github.com/sfX-android/android_buildtools/blob/main/sign/sign_generate_keys.sh#L11-L13) - **WARNING: Setting 8192 requires to patch the Updater + recovery to allow OTA's / ADB sideload install/upgrade**
+- `HASHTYPE` : set keysize (allowed: sha256|sha512), default is [here](https://github.com/sfX-android/android_buildtools/blob/main/sign/sign_generate_keys.sh#L11-L13) - **WARNING: Setting sha512 requires to patch the Updater + recovery to allow OTA's / ADB sideload install/upgrade**
 
 ### sign_set_keysdir.sh
 
