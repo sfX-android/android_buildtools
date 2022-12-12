@@ -49,9 +49,19 @@ chmod 0600 ${one} ${two}
 read -p "Enter password for '$1' (blank for none; password will be visible): " \
   password
 
+case $KSIZE in
+    4096|8192) echo setting rsa-${KSIZE} ;;
+    *) echo "UNSUPPORTED or empty key size: >$KSIZE<" ; exit 3;;
+esac
+
+case $HASHTYPE in
+    sha256|sha512) echo setting $HASHTYPE ;;
+    *) echo "UNSUPPORTED or empty hash >$HASHTYPE<" ; exit 3 ;;
+esac
+
 if [ "${3}" = "rsa" -o "$#" -eq 2 ]; then
-  ( openssl genrsa -f4 2048 | tee ${one} > ${two} ) &
-  hash="-sha256"
+  ( openssl genrsa -f4 $KSIZE | tee ${one} > ${two} ) &
+  hash="-${HASHTYPE}"
 elif [ "${3}" = "ec" ]; then
   ( openssl ecparam -name prime256v1 -genkey -noout | tee ${one} > ${two} ) &
   hash="-sha256"
@@ -70,7 +80,7 @@ else
   echo "creating ${1}.pk8 with password [${password}]"
   export password
   openssl pkcs8 -in ${one} -topk8 -outform DER -out $1.pk8 \
-    -passout env:password
+    -passout env:password -scrypt
   unset password
 fi
 
