@@ -6,11 +6,13 @@ _USR=$USER_NAME
 [ -z $_USR ] && _USR=$BUILD_USERNAME
 [ -z $_USR ] && echo "ERROR: missing USER_NAME var!" && exit 3
 
+[ -z "$CERT_CN" ] && CERT_CN=aosp
+
 # default key/hash sizes
 DEFKSIZE=4096
 DEFHASHTYPE=sha256
 
-KEYS_SUBJECT='/C=DE/ST=Somewhere/L=Somewhere/CN='${_USR}'/OU=aosp/O=android/emailAddress=android@android.local'
+KEYS_SUBJECT='/C=US/ST=Somewhere/L=Somewhere/CN='${_USR}-${CERT_CN}'/OU=Android/O=Google/emailAddress=android@android.local'
 
 [ ! -d $KEYS_DIR ] && mkdir -p $KEYS_DIR
 
