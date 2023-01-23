@@ -50,7 +50,7 @@ read -p "Enter password for '$1' (blank for none; password will be visible): " \
   password
 
 case $KSIZE in
-    4096|8192) echo setting rsa-${KSIZE} ;;
+    2048|3072|4096|5120|8192) echo setting rsa-${KSIZE} ;;
     *) echo "UNSUPPORTED or empty key size: >$KSIZE<" ; exit 3;;
 esac
 

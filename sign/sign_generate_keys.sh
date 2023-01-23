@@ -34,7 +34,13 @@ for c in releasekey platform shared media networkstack verity sdk_sandbox blueto
 	fi
     done
     echo ">> [$(date)]  Generating $c..."
-    ${VENDOR_DIR}/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
+    if [ $c == releasekey ] && [ "$HASHTYPE" != sha256 ];then
+	echo "enforce max hash algo to SHA256 for releasekey!"
+	echo "reason: build/make/tools/signapk/src/com/android/signapk/SignApk.java does not support anything else (atm)"
+	HASHTYPE=sha256 ${VENDOR_DIR}/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
+    else
+	${VENDOR_DIR}/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
+    fi
 done
 for c in cyngn{-priv,}-app testkey; do
     for e in pk8 x509.pem; do
@@ -55,8 +61,8 @@ for a in pk8;do
 	continue 2
     fi
     echo ">> [$(date)] Generating AVB ($a)..."
-    export KSIZE=4096 HASHTYPE=sha256 ; ${VENDOR_DIR}/make_key "$KEYS_DIR/avb" "$KEYS_SUBJECT" <<< '' #&> /dev/null
+    export KSIZE=4096 HASHTYPE=sha512 ; ${VENDOR_DIR}/make_key "$KEYS_DIR/avb" "$KEYS_SUBJECT" <<< '' #&> /dev/null
 done
 [ ! -f "$KEYS_DIR/avb.x509.der" ] && openssl x509 -outform DER -in $KEYS_DIR/avb.x509.pem -out $KEYS_DIR/avb.x509.der && echo "... $KEYS_DIR/avb.x509.der created"
-[ ! -f "$KEYS_DIR/avb.key" ] && openssl pkcs8 -in $KEYS_DIR/avb.pk8 -inform DER -out $KEYS_DIR/avb.key -nocrypt && echo "... $KEYS_DIR/avb.key created"
-[ ! -f "$KEYS_DIR/avb.pem" ] && external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.key --output $KEYS_DIR/avb.pem && echo "... $KEYS_DIR/avb.pem created"
+[ ! -f "$KEYS_DIR/avb.pem" ] && openssl pkcs8 -in $KEYS_DIR/avb.pk8 -inform DER -out $KEYS_DIR/avb.pem -nocrypt && echo "... $KEYS_DIR/avb.pem created"
+[ ! -f "$KEYS_DIR/avb_pkmd.bin" ] && external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.pem --output $KEYS_DIR/avb_pkmd.bin && echo "... $KEYS_DIR/avb_pkmd.bin created"
