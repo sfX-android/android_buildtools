@@ -1,4 +1,11 @@
 #!/bin/bash
+#########################################################################################
+# 
+# Author & Copyright: 2020-2023 steadfasterX <steadfasterX | AT | gmail - DOT - com>
+#
+# Generate all required keys for siging Android builds
+#
+#########################################################################################
 
 VENDOR_DIR=$(dirname $0)
 [ -z "$KEYS_DIR" ] && KEYS_DIR=user-keys
