@@ -28,7 +28,7 @@ optional:
 
 Needed always after a full Android sources sync. Enables the use of the `user-keys/` key files within `vendor/<vendor>/config/common.mk`
   
-Usage: `./sign_set_keysdir.sh <vendor> <Android-Version>`
+Usage: `./sign_set_keysdir.sh <vendor> <Android-Version>` -> Android-Version must be specified as: `a9, a10, ..` or `A9, A10, ..`
   
-Example: `./sign_set_keysdir.sh lineage 18.1`
+Example: `./sign_set_keysdir.sh lineage a11`
   
