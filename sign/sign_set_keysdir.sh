@@ -38,8 +38,12 @@ case $androidver in
 esac
 normalizedver=$(echo "$androidver" | egrep -o "[0-9]+")
 
-# (re)create keys dir if specified
+# (re)create keys dir(s) if specified
 if [ ! -z "$KEYS_DIR" ];then
+    if [ ! -d "$KEYS_DIR" ]; then
+	echo "$KEYS_DIR does not exist - creating it..."
+	mkdir -p "$KEYS_DIR"
+    fi
     if [ ! -L $tdir ]&&[ -d "$tdir" ];then
 	echo "WARNING: KEYS_DIR main path '$tdir' is a directory - we expected a LINK instead!"
       else
