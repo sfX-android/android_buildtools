@@ -3,7 +3,7 @@
 # 
 # Author & Copyright: 2020-2023 steadfasterX <steadfasterX | AT | gmail - DOT - com>
 #
-# Generate all required keys for siging Android builds
+# Generate all required keys for signing Android builds
 #
 #########################################################################################
 
@@ -65,11 +65,13 @@ done
 for a in pk8;do
     if [ -f "$KEYS_DIR/avb.${a}" ];then
 	echo "WARNING: avb.${a} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
-	continue 2
+	continue
     fi
     echo ">> [$(date)] Generating AVB ($a)..."
     export KSIZE=4096 HASHTYPE=sha512 ; ${VENDOR_DIR}/make_key "$KEYS_DIR/avb" "$KEYS_SUBJECT" <<< '' #&> /dev/null
 done
-[ ! -f "$KEYS_DIR/avb.x509.der" ] && openssl x509 -outform DER -in $KEYS_DIR/avb.x509.pem -out $KEYS_DIR/avb.x509.der && echo "... $KEYS_DIR/avb.x509.der created"
-[ ! -f "$KEYS_DIR/avb.pem" ] && openssl pkcs8 -in $KEYS_DIR/avb.pk8 -inform DER -out $KEYS_DIR/avb.pem -nocrypt && echo "... $KEYS_DIR/avb.pem created"
-[ ! -f "$KEYS_DIR/avb_pkmd.bin" ] && external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.pem --output $KEYS_DIR/avb_pkmd.bin && echo "... $KEYS_DIR/avb_pkmd.bin created"
+if [ ! -f $KEYS_DIR/avb_pkmd.bin ];then
+    [ ! -f "$KEYS_DIR/avb.x509.der" ] && openssl x509 -outform DER -in $KEYS_DIR/avb.x509.pem -out $KEYS_DIR/avb.x509.der && echo "... $KEYS_DIR/avb.x509.der created"
+    [ ! -f "$KEYS_DIR/avb.pem" ] && openssl pkcs8 -in $KEYS_DIR/avb.pk8 -inform DER -out $KEYS_DIR/avb.pem -nocrypt && echo "... $KEYS_DIR/avb.pem created"
+    external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.pem --output $KEYS_DIR/avb_pkmd.bin && echo "... $KEYS_DIR/avb_pkmd.bin created"
+fi
