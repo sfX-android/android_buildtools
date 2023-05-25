@@ -24,7 +24,7 @@ KEYS_SUBJECT='/C=US/ST=Somewhere/L=Somewhere/CN='${_USR}-${CERT_CN}'/OU=Android/
 [ ! -d $KEYS_DIR ] && mkdir -p $KEYS_DIR
 
 case $KSIZE in
-    4096|8192) echo setting rsa-${KSIZE} ;;
+    2048|4096|8192) echo setting rsa-${KSIZE} ;;
     *) echo -e "UNSUPPORTED or empty key size: >$KSIZE<\nUsing default KSIZE=$DEFKSIZE"; export KSIZE=$DEFKSIZE;;
 esac
 
