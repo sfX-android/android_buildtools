@@ -25,30 +25,37 @@ KEYS_SUBJECT='/C=US/ST=Somewhere/L=Somewhere/CN='${_USR}-${CERT_CN}'/OU=Android/
 
 case $KSIZE in
     2048|4096|8192) echo setting rsa-${KSIZE} ;;
-    *) echo -e "UNSUPPORTED or empty key size: >$KSIZE<\nUsing default KSIZE=$DEFKSIZE"; export KSIZE=$DEFKSIZE;;
+    *) echo -e "UNSUPPORTED or empty key size: >$KSIZE< --> Using default KSIZE=$DEFKSIZE"; export KSIZE=$DEFKSIZE;;
 esac
 
 case $HASHTYPE in
     sha256|sha512) echo setting $HASHTYPE ;;
-    *) echo -e "UNSUPPORTED or empty hash >$HASHTYPE<\Using default HASHTYPE=$DEFHASHTYPE" ; export HASHTYPE=$DEFHASHTYPE ;;
+    *) echo -e "UNSUPPORTED or empty hash >$HASHTYPE< --> Using default HASHTYPE=$DEFHASHTYPE" ; export HASHTYPE=$DEFHASHTYPE ;;
 esac
 
+unset nlist
 for c in releasekey platform shared media networkstack verity sdk_sandbox bluetooth; do
     for k in pem key pk8 x509.pem der;do
 	if [ -f "$KEYS_DIR/${c}.${k}" ];then
-	    echo "WARNING: $c.${k} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
+	    echo "WARNING: $KEYS_DIR/$c.${k} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
+	    echo "$nlist" |grep -q "$c" && nlist=$(echo $nlist | sed "s/$c//g")
 	    continue 2
+	else
+	    echo "$nlist" |grep -q "$c" || nlist="$nlist $c"
 	fi
     done
-    echo ">> [$(date)]  Generating $c..."
-    if [ $c == releasekey ] && [ "$HASHTYPE" != sha256 ];then
+done
+for nc in $nlist;do
+    echo ">> [$(date)]  Generating $nc..."
+    if [ $nc == releasekey ] && [ "$HASHTYPE" != sha256 ];then
 	echo "enforce max hash algo to SHA256 for releasekey!"
 	echo "reason: build/make/tools/signapk/src/com/android/signapk/SignApk.java does not support anything else (atm)"
-	HASHTYPE=sha256 ${VENDOR_DIR}/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
+	HASHTYPE=sha256 ${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
     else
-	${VENDOR_DIR}/make_key "$KEYS_DIR/$c" "$KEYS_SUBJECT" <<< '' &> /dev/null
+	${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
     fi
 done
+
 for c in cyngn{-priv,}-app testkey; do
     for e in pk8 x509.pem; do
       ln -s releasekey.$e "$KEYS_DIR/$c.$e" 2> /dev/null
@@ -73,5 +80,5 @@ done
 if [ ! -f $KEYS_DIR/avb_pkmd.bin ];then
     [ ! -f "$KEYS_DIR/avb.x509.der" ] && openssl x509 -outform DER -in $KEYS_DIR/avb.x509.pem -out $KEYS_DIR/avb.x509.der && echo "... $KEYS_DIR/avb.x509.der created"
     [ ! -f "$KEYS_DIR/avb.pem" ] && openssl pkcs8 -in $KEYS_DIR/avb.pk8 -inform DER -out $KEYS_DIR/avb.pem -nocrypt && echo "... $KEYS_DIR/avb.pem created"
-    external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.pem --output $KEYS_DIR/avb_pkmd.bin && echo "... $KEYS_DIR/avb_pkmd.bin created"
+    python2 external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.pem --output $KEYS_DIR/avb_pkmd.bin && echo "... $KEYS_DIR/avb_pkmd.bin created"
 fi
