@@ -34,7 +34,7 @@ case $HASHTYPE in
 esac
 
 unset nlist
-for c in releasekey platform shared media networkstack verity sdk_sandbox bluetooth; do
+for c in releasekey platform shared media networkstack verity sdk_sandbox bluetooth extra; do
     for k in pem key pk8 x509.pem der;do
 	if [ -f "$KEYS_DIR/${c}.${k}" ];then
 	    echo "WARNING: $KEYS_DIR/$c.${k} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
@@ -80,5 +80,5 @@ done
 if [ ! -f $KEYS_DIR/avb_pkmd.bin ];then
     [ ! -f "$KEYS_DIR/avb.x509.der" ] && openssl x509 -outform DER -in $KEYS_DIR/avb.x509.pem -out $KEYS_DIR/avb.x509.der && echo "... $KEYS_DIR/avb.x509.der created"
     [ ! -f "$KEYS_DIR/avb.pem" ] && openssl pkcs8 -in $KEYS_DIR/avb.pk8 -inform DER -out $KEYS_DIR/avb.pem -nocrypt && echo "... $KEYS_DIR/avb.pem created"
-    python2 external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.pem --output $KEYS_DIR/avb_pkmd.bin && echo "... $KEYS_DIR/avb_pkmd.bin created"
+    python external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.pem --output $KEYS_DIR/avb_pkmd.bin && echo "... $KEYS_DIR/avb_pkmd.bin created"
 fi
