@@ -12,7 +12,7 @@ spath="$1"
 FOUND="$2"
 BLOBS=()
 
-if [ "$spath" ]||[ -f "$FOUND" ];then echo "ERROR. usage: $0 <search path> <full-path-to-blob>"; exit 4;fi
+if [ -z "$spath" ]||[ ! -f "$FOUND" ];then echo "ERROR. usage: $0 <search path> <full-path-to-blob>"; exit 4;fi
 
 lib_lookup() {
     readelf -d $1 | grep NEEDED | cut -d "[" -f2 | cut -d"]" -f 1
@@ -36,6 +36,5 @@ global_search() {
     done
 }
 
-[ "$DEBUG" -eq 1 ] && echo starting search on $1
-global_search $FOUND
-[ "$DEBUG" -eq 1 ] && echo finished search on $1
+[ "$DEBUG" -eq 1 ] && echo "starting search on $spath for $FOUND"
+global_search "$FOUND"
