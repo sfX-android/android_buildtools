@@ -30,6 +30,7 @@ case $androidver in
     [aA]11) androidver=11 ;;
     [aA]12) androidver=12 ;;
     [aA]13) androidver=13 ;;
+    [aA]14) androidver=14 ;;
     *)
     echo "ERROR: Unknown android version specified! please use a7, a8, a9, ... (A7, A8, A9, ... will work, too) for a clear definition!"
     echo "Update your scripts and workflows which using this script as names (nougat, etc) and numbers (16.0, 17.1 etc) support has been dropped!"
