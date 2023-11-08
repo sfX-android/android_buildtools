@@ -12,14 +12,16 @@ VENDOR_DIR=$(dirname $0)
 _USR=$USER_NAME
 [ -z $_USR ] && _USR=$BUILD_USERNAME
 [ -z $_USR ] && echo "ERROR: missing USER_NAME var!" && exit 3
-
 [ -z "$CERT_CN" ] && CERT_CN=aosp
+KEYS_SUBJECT='/C=US/ST=Somewhere/L=Somewhere/CN='${_USR}-${CERT_CN}'/OU=Android/O=Google/emailAddress=android@android.local'
+
+# ensure avbtool binary path is set properly 
+# (e.g on pie external/avb/avbtool exists only but on A14 there's only external/avb/avbtool.py
+[ -x external/avb/avbtool ] && ln -s avbtool.py external/avb/avbtool
 
 # default key/hash sizes
 DEFKSIZE=4096
 DEFHASHTYPE=sha256
-
-KEYS_SUBJECT='/C=US/ST=Somewhere/L=Somewhere/CN='${_USR}-${CERT_CN}'/OU=Android/O=Google/emailAddress=android@android.local'
 
 [ ! -d $KEYS_DIR ] && mkdir -p $KEYS_DIR
 
@@ -47,7 +49,7 @@ for c in releasekey platform shared media networkstack verity sdk_sandbox blueto
 done
 for nc in $nlist;do
     echo ">> [$(date)]  Generating $nc..."
-    if [ $nc == releasekey ] && [ "$HASHTYPE" != sha256 ];then
+avbtool    if [ $nc == releasekey ] && [ "$HASHTYPE" != sha256 ];then
 	echo "enforce max hash algo to SHA256 for releasekey!"
 	echo "reason: build/make/tools/signapk/src/com/android/signapk/SignApk.java does not support anything else (atm)"
 	HASHTYPE=sha256 ${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
@@ -82,3 +84,19 @@ if [ ! -f $KEYS_DIR/avb_pkmd.bin ];then
     [ ! -f "$KEYS_DIR/avb.pem" ] && openssl pkcs8 -in $KEYS_DIR/avb.pk8 -inform DER -out $KEYS_DIR/avb.pem -nocrypt && echo "... $KEYS_DIR/avb.pem created"
     python external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.pem --output $KEYS_DIR/avb_pkmd.bin && echo "... $KEYS_DIR/avb_pkmd.bin created"
 fi
+
+# Android 14 requires to set a BUILD file for bazel to avoid errors:
+cat > $KEYS_DIR/BUILD << _EOB
+# adding an empty BUILD file fixes:
+# "ERROR: no such package 'keys': BUILD file not found in any of the following directories. Add a BUILD file to a directory to mark it as a package."
+# adding the filegroup "android_certificate_directory" fixes:
+# "no such target '//keys:android_certificate_directory': target 'android_certificate_directory' not declared in package 'keys'"
+filegroup(
+    name = "android_certificate_directory",
+    srcs = glob([
+        "*.pk8",
+        "*.pem",
+    ]),
+    visibility = ["//visibility:public"],
+)
+_EOB
