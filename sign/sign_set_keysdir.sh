@@ -13,11 +13,16 @@ vendor=$1
 # can be just "11" or "a11" or "android11" or "android-11" .. anything except digits will be removed
 androidver=$2
 
+# optionally specifying the keys dir (relative from the sources path)
+[ ! -z "$3" ] && tdir="$3"
+
 # set directory name within the source dir
-case "$vendor" in
-    graphene) tdir="keys" ;;
-    *) vendor=lineage tdir="user-keys";;
-esac
+if [ -z "$tdir" ];then
+    case "$vendor" in
+        graphene) tdir="keys" ;;
+               *) tdir="user-keys";;
+    esac
+fi
 
 [ -z "$androidver" ] && androidver=0
 
