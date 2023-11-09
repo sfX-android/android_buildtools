@@ -30,21 +30,25 @@ Needed always after a full Android sources sync. Enables the use of the key file
   
 #### Usage
 
-- `./sign_set_keysdir.sh <vendor> <Android-Version> [keys-directory]` 
+- `./sign_set_keysdir.sh <vendor> <Android-Version> [link-name-to-KEYS_DIR]` 
 
 ```
-<vendor>               vendor/<vendor>/config/common.mk will be changed to use the right keys directory (so must exist)
-<Android-Version>      Android-Version must be specified as: "a9, a10, .." or "A9, A10, .."
-[<keys-directory>]       Optional: specify a relative path where the key files are expected, if unspecified "user-keys/" will be used
+<vendor>                  vendor/<vendor>/config/common.mk will be changed to use the right keys directory (so must exist)
+<Android-Version>         Android-Version must be specified as: "a9, a10, .." or "A9, A10, .."
+[<link-name-to-KEYS_DIR>] Optional: specify the link name which should point to the real KEYS_DIR path
 ```
 
 #### environment variables
 
-instead of specifying the (optional) keys-directory as a parameter you can also set the variable
+required:
 
-`export KEYS_DIR=<keys-directory>`
+- `export KEYS_DIR=<keys-directory>`: target directory where the keys are expected
 
-when both are specified (call parameter + environment variable) the parameter wins
+optional:
+
+instead of specifying the (optional) `<link-name-to-KEYS_DIR>` as a parameter you can also set the variable
+
+- `export KEYS_DIR_LINKNAME=<link-name-to KEYS_DIR>` <br/>note: when both are specified (call parameter + environment variable) the parameter wins
 
 #### Examples
 
