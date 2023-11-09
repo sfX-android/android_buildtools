@@ -49,7 +49,7 @@ for c in releasekey platform shared media networkstack verity sdk_sandbox blueto
 done
 for nc in $nlist;do
     echo ">> [$(date)]  Generating $nc..."
-avbtool    if [ $nc == releasekey ] && [ "$HASHTYPE" != sha256 ];then
+    if [ $nc == releasekey ] && [ "$HASHTYPE" != sha256 ];then
 	echo "enforce max hash algo to SHA256 for releasekey!"
 	echo "reason: build/make/tools/signapk/src/com/android/signapk/SignApk.java does not support anything else (atm)"
 	HASHTYPE=sha256 ${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
