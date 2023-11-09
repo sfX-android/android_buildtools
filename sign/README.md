@@ -28,7 +28,7 @@ optional:
 
 Needed always after a full Android sources sync. Enables the use of the key file directory within `vendor/<vendor>/config/common.mk`
   
-### Usage
+#### Usage
 
 - `./sign_set_keysdir.sh <vendor> <Android-Version> [keys-directory]` 
 
@@ -38,7 +38,7 @@ Needed always after a full Android sources sync. Enables the use of the key file
 [<keys-directory>]       Optional: specify a relative path where the key files are expected, if unspecified "user-keys/" will be used
 ```
 
-### environment variables
+#### environment variables
 
 instead of specifying the (optional) keys-directory as a parameter you can also set the variable
 
@@ -46,7 +46,7 @@ instead of specifying the (optional) keys-directory as a parameter you can also 
 
 when both are specified (call parameter + environment variable) the parameter wins
 
-### Examples
+#### Examples
 
 - `./sign_set_keysdir.sh lineage a11`
 - `./sign_set_keysdir.sh graphene a14 keys/lynx`
