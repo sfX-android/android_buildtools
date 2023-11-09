@@ -26,9 +26,20 @@ optional:
 
 ## sign_set_keysdir.sh
 
-Needed always after a full Android sources sync. Enables the use of the `user-keys/` key files within `vendor/<vendor>/config/common.mk`
+Needed always after a full Android sources sync. Enables the use of the key file directory within `vendor/<vendor>/config/common.mk`
   
-Usage: `./sign_set_keysdir.sh <vendor> <Android-Version>` -> Android-Version must be specified as: `a9, a10, ..` or `A9, A10, ..`
-  
-Example: `./sign_set_keysdir.sh lineage a11`
+Usage: 
+
+- `./sign_set_keysdir.sh <vendor> <Android-Version> [keys-directory]` 
+
+```
+<vendor>               vendor/<vendor>/config/common.mk will be changed to use the right keys directory (so must exist)
+<Android-Version>      Android-Version must be specified as: "a9, a10, .." or "A9, A10, .."
+[keys-directory]       Optional: specify a relative path where the key files are expected, if unspecified "user-keys/" will be used
+```
+
+Examples:
+
+- `./sign_set_keysdir.sh lineage a11`
+- `./sign_set_keysdir.sh graphene a14 keys/lynx`
   
