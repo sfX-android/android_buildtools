@@ -15,6 +15,7 @@ androidver=$2
 
 # optionally specifying the keys dir (relative from the sources path)
 [ ! -z "$3" ] && tdir="$3"
+[ -z "$tdir" ] && tdir="$KEYS_DIR"
 
 # set directory name within the source dir
 if [ -z "$tdir" ];then
