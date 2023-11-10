@@ -87,9 +87,9 @@ fi
 
 # Android 14 requires to set a BUILD file for bazel to avoid errors:
 cat > $KEYS_DIR/BUILD << _EOB
-# adding an empty BUILD file fixes:
+# adding an empty BUILD file fixes the A14 build error:
 # "ERROR: no such package 'keys': BUILD file not found in any of the following directories. Add a BUILD file to a directory to mark it as a package."
-# adding the filegroup "android_certificate_directory" fixes:
+# adding the filegroup "android_certificate_directory" fixes the A14 build error:
 # "no such target '//keys:android_certificate_directory': target 'android_certificate_directory' not declared in package 'keys'"
 filegroup(
     name = "android_certificate_directory",
