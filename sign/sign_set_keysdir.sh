@@ -62,19 +62,24 @@ if [ ! -z "$KEYS_DIR" ];then
       fi
 fi
 
-if [ $vendor != "graphene" ];then
-    [ ! -f vendor/$vendor/config/common.mk ] && echo "vendor/$vendor/config/common.mk does not exists! ABORTED" && exit 9
+if [ "$vendor" != "graphene" ];then
 
-    grep -q "PRODUCT_DEFAULT_DEV_CERTIFICATE := $tdir/releasekey" vendor/$vendor/config/common.mk
-    if [ $? -ne 0 ];then 
-	sed -i "1s;^;PRODUCT_DEFAULT_DEV_CERTIFICATE := $tdir/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_DEFAULT_DEV_CERTIFICATE set"
-    fi
+	if [ "$vendor" == "eos" ] && [ "$normalizedver" -ge 10 ];then
+ 		echo "skipped PRODUCT_DEFAULT_DEV_CERTIFICATE + PRODUCT_OTA_PUBLIC_KEYS as eOS is A${normalizedver} and so part of vendor/eos already"
+   	else
+		[ ! -f vendor/$vendor/config/common.mk ] && echo "vendor/$vendor/config/common.mk does not exists! ABORTED" && exit 9
+		grep -q "PRODUCT_DEFAULT_DEV_CERTIFICATE := $tdir/releasekey" vendor/$vendor/config/common.mk
+		if [ $? -ne 0 ];then 
+		    sed -i "1s;^;PRODUCT_DEFAULT_DEV_CERTIFICATE := $tdir/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_DEFAULT_DEV_CERTIFICATE set"
+		fi
+		grep -q "PRODUCT_OTA_PUBLIC_KEYS := $tdir/releasekey" vendor/$vendor/config/common.mk
+		if [ $? -ne 0 ];then
+		    sed -i "1s;^;PRODUCT_OTA_PUBLIC_KEYS := $tdir/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_OTA_PUBLIC_KEYS set"
+		fi
+  	fi
 
-    grep -q "PRODUCT_OTA_PUBLIC_KEYS := $tdir/releasekey" vendor/$vendor/config/common.mk
-    if [ $? -ne 0 ];then
-	sed -i "1s;^;PRODUCT_OTA_PUBLIC_KEYS := $tdir/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_OTA_PUBLIC_KEYS set"
-    fi
-
+fi
+if [ "$vendor" != "graphene" ];then
     # android =< 10 will fail when using PRODUCT_EXTRA_RECOVERY_KEYS
     if [ "$normalizedver" -lt 10 ];then
 	grep -q "PRODUCT_EXTRA_RECOVERY_KEYS := $tdir/releasekey" vendor/$vendor/config/common.mk
