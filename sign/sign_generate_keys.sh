@@ -1,7 +1,7 @@
 #!/bin/bash
 #########################################################################################
 # 
-# Author & Copyright: 2020-2023 steadfasterX <steadfasterX | AT | gmail - DOT - com>
+# Author & Copyright: 2020-2024 steadfasterX <steadfasterX | AT | gmail - DOT - com>
 #
 # Generate all required keys for signing Android builds
 #
@@ -67,7 +67,7 @@ done
 
 # make readable format for manual verifier
 [ ! -f "$KEYS_DIR/releasekey.pem" ] && openssl rsa -inform DER -outform PEM -in $KEYS_DIR/releasekey.pk8 -out $KEYS_DIR/releasekey.pem && echo "... $KEYS_DIR/releasekey.pem created"
-[ ! -f "$KEYS_DIR/releasekey.pub" ] && openssl rsa -in $KEYS_DIR/releasekey.pem -pubout > $KEYS_DIR/releasekey.pub && echo "... $KEYS_DIR/releasekey.pub created"
+[ ! -f "$KEYS_DIR/releasekey_OTA.pub" ] && openssl rsa -in $KEYS_DIR/releasekey.pem -pubout > $KEYS_DIR/releasekey_OTA.pub && echo "... $KEYS_DIR/releasekey_OTA.pub created"
 
 # make AVB required stuff
 # AVB supports usually (atm) only sha256+4096bit max
@@ -76,8 +76,18 @@ for a in pk8;do
 	echo "WARNING: avb.${a} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
 	continue
     fi
-    echo ">> [$(date)] Generating AVB ($a)..."
-    export KSIZE=4096 HASHTYPE=sha512 ; ${VENDOR_DIR}/make_key "$KEYS_DIR/avb" "$KEYS_SUBJECT" <<< '' #&> /dev/null
+    if [ "$HASHTYPE" != "sha256" -a "$HASHTYPE" != "sha512" ];then
+        echo "Unsupported hash type for AVB: $HASHTYPE"
+        echo "enforcing max known to work value instead (sha512)"
+        export HASHTYPE=sha512
+    fi
+    if [ "$KSIZE" -gt 4096 ];then
+        echo "Unsupported key size for AVB: $KSIZE"
+        echo "enforcing max known to work value instead (4096)"
+        export HASHTYPE=4096
+    fi
+    echo ">> [$(date)] Generating AVB ($a | $KSIZE/$HASHTYPE)..."
+    ${VENDOR_DIR}/make_key "$KEYS_DIR/avb" "$KEYS_SUBJECT" <<< '' #&> /dev/null
 done
 if [ ! -f $KEYS_DIR/avb_pkmd.bin ];then
     [ ! -f "$KEYS_DIR/avb.x509.der" ] && openssl x509 -outform DER -in $KEYS_DIR/avb.x509.pem -out $KEYS_DIR/avb.x509.der && echo "... $KEYS_DIR/avb.x509.der created"
