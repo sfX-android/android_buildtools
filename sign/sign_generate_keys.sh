@@ -84,7 +84,7 @@ for a in pk8;do
     if [ "$KSIZE" -gt 4096 ];then
         echo "Unsupported key size for AVB: $KSIZE"
         echo "enforcing max known to work value instead (4096)"
-        export HASHTYPE=4096
+        export KSIZE=4096
     fi
     echo ">> [$(date)] Generating AVB ($a | $KSIZE/$HASHTYPE)..."
     ${VENDOR_DIR}/make_key "$KEYS_DIR/avb" "$KEYS_SUBJECT" <<< '' #&> /dev/null
