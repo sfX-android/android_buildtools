@@ -17,7 +17,7 @@ KEYS_SUBJECT='/C=US/ST=Somewhere/L=Somewhere/CN='${_USR}-${CERT_CN}'/OU=Android/
 
 # ensure avbtool binary path is set properly 
 # (e.g on pie external/avb/avbtool exists only but on A14 there's only external/avb/avbtool.py
-[ -x external/avb/avbtool ] && ln -s avbtool.py external/avb/avbtool
+[ ! -x external/avb/avbtool ] && ln -s avbtool.py external/avb/avbtool
 
 # default key/hash sizes
 DEFKSIZE=4096
