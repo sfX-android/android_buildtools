@@ -36,7 +36,7 @@ case $HASHTYPE in
 esac
 
 unset nlist
-for c in releasekey platform shared media networkstack verity sdk_sandbox bluetooth extra; do
+for c in releasekey platform shared media networkstack verity sdk_sandbox bluetooth extra apps; do
     for k in pem key pk8 x509.pem der;do
 	if [ -f "$KEYS_DIR/${c}.${k}" ];then
 	    echo "WARNING: $KEYS_DIR/$c.${k} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
@@ -95,7 +95,7 @@ if [ ! -f $KEYS_DIR/avb_pkmd.bin ];then
     python external/avb/avbtool extract_public_key --key $KEYS_DIR/avb.pem --output $KEYS_DIR/avb_pkmd.bin && echo "... $KEYS_DIR/avb_pkmd.bin created"
 fi
 
-# Android 14 requires to set a BUILD file for bazel to avoid errors:
+# Android >= 14 requires to set a BUILD file for bazel to avoid errors:
 cat > $KEYS_DIR/BUILD << _EOB
 # adding an empty BUILD file fixes the A14 build error:
 # "ERROR: no such package 'keys': BUILD file not found in any of the following directories. Add a BUILD file to a directory to mark it as a package."
