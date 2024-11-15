@@ -26,6 +26,7 @@ ROMDIR="/home/nightlies/roms/theme"
 WEBLOG='/var/lib/lxd/containers/ota/rootfs/var/log/apache2/access_ssl.log /var/lib/lxd/containers/ota/rootfs/var/log/apache2/access.log'
 
 # logrotate command to execute after each run:
+# ensure you use '-f' to ENFORCE rotating so we do not count things again on next run
 LOGREXEC="lxc exec ota -- logrotate -f /etc/logrotate.d/apache2"
 
 # report file names with their corresponding search pattern
