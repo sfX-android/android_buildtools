@@ -1,13 +1,14 @@
 #!/bin/bash
 ##################################################################################################
 #
-# Parse nginx log for downloading counts and generate a very simple report html
+# Parse nginx/apache log(s) for download counts and generate a very simple report html
 #
-# example report: https://leech.binbash.rocks:8008/theme/stats_los.html
+# example report:
+# https://leech.binbash.rocks:8008/theme/ota_stats_los.html
 #
 # Copyright 2019-2024: <steadfasterX |at| binbash #DOT# rocks>
 ##################################################################################################
-VERSION="v0.6"
+VERSION="v0.7"
 
 # a static date when you start using this script the first time
 # it is just used for informational purpose to show in the title of the total count
@@ -22,10 +23,10 @@ ROMDIR="/home/nightlies/roms/theme"
 
 # the full path(s) to the webserver log(s)
 # multiple log paths need to be separated by a space
-WEBLOG="/var/log/nginx/leech/access.log"
+WEBLOG='/var/lib/lxd/containers/ota/rootfs/var/log/apache2/access_ssl.log /var/lib/lxd/containers/ota/rootfs/var/log/apache2/access.log'
 
-# total counter for mAid stats
-PERM_CNTMAID=/var/log/counter/maidstats.total
+# logrotate command to execute after each run:
+LOGREXEC="lxc exec ota -- logrotate -f /etc/logrotate.d/apache2"
 
 # report file names with their corresponding search pattern
 # the format is as follows:
@@ -33,28 +34,17 @@ PERM_CNTMAID=/var/log/counter/maidstats.total
 #  STAT[N] can be any number, just ensure you put new ones in "STATFILES=" variable
 #  <full-path-to-local-report> is a local unique path accessible from the internet, becomes the actual report file
 #  <filename1|filename2|filenameN> can be 1 or multiple regex pattern separated by a pipe
-STATF1="$ROMDIR/stats_fwul.html:FWUL.*\.zip|FWUL.*\.iso|mAid.*iso"
-STATF2="$ROMDIR/stats_los.html:lineage/.*/lineage.*\.zip"
-STATF3="$ROMDIR/stats_aoscp.html:aoscp/.*/aoscp.*\.zip"
-STATF4="$ROMDIR/stats_misc.html:misc/.*tar.gz|misc/.*\.apk"
-STATF5="$ROMDIR/stats_stock.html:stock/.*/.*\.img|stock/.*/.*\.bin\s|stock/.*/.*\.7z|stock/.*/.*\.zip"
-STATF6="$ROMDIR/stats_twrp.html:TWRP/.*/twrp.*\.img"
-STATF7="$ROMDIR/stats_aokp.html:aokp/.*/aokp.*\.zip"
-STATF8="$ROMDIR/stats_twrpfish.html:TWRP-in-FIsH.*tar\.gz"
-STATF9="$ROMDIR/stats_rr.html:rr/.*/RR-.*\.zip"
-STATF10="$ROMDIR/stats_unbrick.html:unbricking/.*/.*\.tot|unbricking/.*/.*\.msi|unbricking/.*/.*\.zip"
-STATF11="$ROMDIR/stats_kernel.html:kernel/.*/.*\.img|kernel/.*/.*\.zip"
-STATF12="$ROMDIR/stats_shrp.html:SHRP/.*/SHRP_v.*\.zip"
-STATF13="$ROMDIR/stats_e-os.html:e-os/.*/e-.*\.zip"
-STATF14="$ROMDIR/stats_axp.html:axp/.*/AXP.*\.zip"
+STATF1="$ROMDIR/ota_stats_los.html:lineage/.*/lineage.*\.zip"
+STATF2="$ROMDIR/ota_stats_e-os.html:e-os/.*/e-.*\.zip"
+STATF3="$ROMDIR/ota_stats_axp.html:axp/.*/AXP.*\.zip"
 
 # if you add additional STATF[N] statements above, add them here as well
 # the parser will only handle the STATFILES var
-STATFILES="$STATF1 $STATF2 $STATF3 $STATF4 $STATF5 $STATF6 $STATF7 $STATF8 $STATF9 $STATF10 $STATF11 $STATF12 $STATF13 $STATF14"
+STATFILES="$STATF1 $STATF2 $STATF3"
 
 # besides the above defined search patterns these are excluded always
 # separated by pipe, pattern can be a regex
-EXCLUDE="/theme/|css|md5|sha256|sha512|\.prop"
+EXCLUDE="/theme/|css|md5|sha256|sha512|\.prop|/api/"
 
 ################################################################################################################################
 
@@ -72,17 +62,6 @@ F_HELP(){
      5. generates a stats html report
      6. triggers a logrotate if all went fine
 
-    Requirements:
-
-      create: /etc/logrotate.d/weblog:
-
-            $WEBLOG {
-                    monthly
-                    rotate 7
-                    missingok
-                    compress
-            }
-
     Usage:
 
     $0 (without arguments)    regular usage. will run, parse, generate stats
@@ -95,6 +74,19 @@ F_HELP(){
                               persistent file creation (step4), logrotate (step6)
                               step5 will create a stats file named <STATF[N]>.debug.html
 
+    Schedule:
+    
+    once the script is working as expected create e.g. a /etc/cron.d/gen-stats:
+      
+	# generate download stats
+	SHELL=/bin/bash
+	PATH=/sbin:/bin:/usr/sbin:/usr/bin
+	30 1 * * 1 root /root/gen_simple_dl-stats.sh
+
+    with the above cron you will just see the stats from the last week. if you want e.g. monthly
+    logs you should use cron.monthly to generate it monthly but then you might need to adjust
+    the logrotate.d config as well! the logrotate.d conf should always fire way later then your
+    cron so it actually should NEVER gets executed - because this is handled by this script.
 
 _EOHELP
 }
@@ -159,7 +151,7 @@ EOHEAD
     if [ ! -f "$PERM_CNT_FILE" ] || [ $SKIPCALC -eq 1 ] ; then DLCNT=0; else eval $(cat $PERM_CNT_FILE);fi
     PASTCNT=$DLCNT
 
-    for dl in $(zgrep -E -i "GET.*/.*($SEARCHSTR).* 200 " $WEBLOG | grep -E -v "($EXCLUDE)" |cut -d ' ' -f "7,9"|grep 200 |cut -d " " -f1);do
+    for dl in $(zgrep --no-filename -E -i "GET.*/.*($SEARCHSTR).* 200 " $WEBLOG | grep -E -v "($EXCLUDE)" |cut -d ' ' -f "7,9" |cut -d " " -f1);do
 	echo "${dl##*/}<br/>" 
 	DLCNT=$((DLCNT+1))
 	echo $DLCNT > $TOTALCNT
@@ -183,21 +175,15 @@ EOHEAD
     fi
     chmod +r ${PERM_CNT_FILE}
 
-    # update mAid totals
-    echo "$SHTML" | grep -E -qi "fwul|maid"
-    if [ $? -eq 0 ];then
-        [ "$DEBUG" -ne 1 ] && cp ${PERM_CNT_FILE} ${PERM_CNTMAID}
-    fi
-
     echo "<br/><u><h2>Most recent downloads</h2></u><br/>" >> $SHTML
     for at in $(find $WEBLOG);do
-        zgrep -E -i "GET.*/.*($SEARCHSTR).* 200 " $at | grep -E -v "($EXCLUDE)" |cut -d ' ' -f "4,7,9"|grep 200 | tr -d "[" |cut -d " " -f 1,2 && break
+        zgrep -E -i "GET.*/.*($SEARCHSTR).* 200 " $at | grep -E -v "($EXCLUDE)" |cut -d ' ' -f "4,7,9" | tr -d "[" |cut -d " " -f 1,2 #&& break
     done | sort -r | sed 's# /.*/# -- | -- #g' | sed 's#$#<br/>#g' >> $SHTML
-    #done | sort -Mr | sort -ur --key=2 | sed 's# /.*/# -- | -- #g' | sed 's#$#<br/>#g' >> $SHTML
 
     if [ "$DEBUG" -eq 1 ];then
         for at in $(find $WEBLOG);do
             F_LOG D "$SEARCHSTR at $at excluding: $EXCLUDE"
+            zgrep -E -i "GET.*/.*($SEARCHSTR).* 200 " $at | grep -E -v "($EXCLUDE)" |cut -d ' ' -f "4,7,9" | tr -d "[" |cut -d " " -f 1,2 #&& break
         done
     fi
 
@@ -206,4 +192,4 @@ EOHEAD
 done
 
 # FORCE logrotate run so we do not count everything again
-[ $DEBUG -ne 1 ] && logrotate -f /etc/logrotate.d/weblog
+[ $DEBUG -ne 1 ] && $LOGREXEC
