@@ -36,7 +36,7 @@ case $HASHTYPE in
 esac
 
 unset nlist
-for c in releasekey platform shared media networkstack verity sdk_sandbox bluetooth extra apps; do
+for c in releasekey platform shared media networkstack verity sdk_sandbox bluetooth extra apps nfc; do
     for k in pem key pk8 x509.pem der;do
 	if [ -f "$KEYS_DIR/${c}.${k}" ];then
 	    echo "WARNING: $KEYS_DIR/$c.${k} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
