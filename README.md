@@ -44,3 +44,17 @@ made some decades ago to build for several devices which all have their own shit
 ### blobutil/
 
 superseeded by blobs.sh (see above). it was a way to find dependencies of blobs.
+
+### print-bootloader-id.sh
+
+example:
+```
+BOOTLOADER minimal ID
+        AC2F6121
+
+BOOTLOADER full ID:
+        AC2F6121652F3607
+        71EEB5510F6DB2D2
+        9CB444CE23F8A64E
+        9D1FDB7175432C32
+```
