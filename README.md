@@ -59,7 +59,7 @@ BOOTLOADER full ID:
         9D1FDB7175432C32
 ```
 
-### scripts/cherrypicker.py
+### cherrypicker.py
 
 generates a list of repopicks from a gerrit server.
 
