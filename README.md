@@ -27,6 +27,30 @@ Things you can adjust are:
 
 It was written to get an idea which combination of the above would be best and it was used on several file systems as well (f2fs, ext4 etc)
 
+### print-bootloader-id.sh
+
+example:
+```
+BOOTLOADER minimal ID
+        AC2F6121
+
+BOOTLOADER full ID:
+        AC2F6121652F3607
+        71EEB5510F6DB2D2
+        9CB444CE23F8A64E
+        9D1FDB7175432C32
+```
+
+### cherrypicker.py
+
+generates a list of repopicks from a gerrit server. mandatory part of ASB patching in e.g. my [build automation](https://github.com/sfX-android/automation_scripts/blob/ansible/roles/common/tasks/secpatch.yml).
+
+forked from https://github.com/GeoZac/android_vendor_unconv
+
+```
+scripts/cherrypicker.py -R los -B {{ sec_patch_pick_branch }} -Q 'topic:Q_asb_2025-01'
+```
+
 # legacy
 
 ### start_android_env.sh
@@ -44,27 +68,3 @@ made some decades ago to build for several devices which all have their own shit
 ### blobutil/
 
 superseeded by blobs.sh (see above). it was a way to find dependencies of blobs.
-
-### print-bootloader-id.sh
-
-example:
-```
-BOOTLOADER minimal ID
-        AC2F6121
-
-BOOTLOADER full ID:
-        AC2F6121652F3607
-        71EEB5510F6DB2D2
-        9CB444CE23F8A64E
-        9D1FDB7175432C32
-```
-
-### cherrypicker.py
-
-generates a list of repopicks from a gerrit server.
-
-forked from https://github.com/GeoZac/android_vendor_unconv
-
-```
-scripts/cherrypicker.py -R los -B {{ sec_patch_pick_branch }} -Q 'topic:Q_asb_2025-01'
-```
