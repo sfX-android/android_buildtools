@@ -58,3 +58,13 @@ BOOTLOADER full ID:
         9CB444CE23F8A64E
         9D1FDB7175432C32
 ```
+
+### scripts/cherrypicker.py
+
+generates a list of repopicks from a gerrit server.
+
+forked from https://github.com/GeoZac/android_vendor_unconv
+
+```
+scripts/cherrypicker.py -R los -B {{ sec_patch_pick_branch }} -Q 'topic:Q_asb_2025-01'
+```

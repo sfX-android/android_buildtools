@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+##################################################################################
+# forked from: https://github.com/GeoZac/android_vendor_unconv
+# License: GPLv3
+##################################################################################
 
 import sys
 from argparse import ArgumentParser
