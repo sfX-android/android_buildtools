@@ -48,7 +48,7 @@ generates a list of repopicks from a gerrit server. mandatory part of ASB patchi
 forked from https://github.com/GeoZac/android_vendor_unconv
 
 ```
-scripts/cherrypicker.py -R los -B {{ sec_patch_pick_branch }} -Q 'topic:Q_asb_2025-01'
+python3 cherrypicker.py -R los -B {{ sec_patch_pick_branch }} -Q 'topic:Q_asb_2025-01'
 ```
 
 # legacy
