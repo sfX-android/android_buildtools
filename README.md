@@ -41,7 +41,7 @@ BOOTLOADER full ID:
         9D1FDB7175432C32
 ```
 
-### cherrypicker.py
+### cherrypicker.py (+xtrasforcherrypicker.py)
 
 generates a list of repopicks from a gerrit server. mandatory part of ASB patching in e.g. my [build automation](https://github.com/sfX-android/automation_scripts/blob/ansible/roles/common/tasks/secpatch.yml).
 
