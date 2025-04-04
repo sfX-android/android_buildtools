@@ -1,7 +1,7 @@
 #!/bin/bash
 ################################################################################################
 #
-# Author & Copyright: 2020-2023 steadfasterX <steadfasterX | AT | gmail - DOT - com>
+# Author & Copyright: 2020-2025 steadfasterX <steadfasterX | AT | gmail - DOT - com>
 #
 # Prepare <vendor> dir to use a custom signing key
 #
@@ -37,6 +37,7 @@ case $androidver in
     [aA]12) androidver=12 ;;
     [aA]13) androidver=13 ;;
     [aA]14) androidver=14 ;;
+    [aA]15) androidver=15 ;;
     *)
     echo "ERROR: Unknown android version specified! please use a7, a8, a9, ... (A7, A8, A9, ... will work, too) for a clear definition!"
     echo "Update your scripts and workflows which using this script as names (nougat, etc) and numbers (16.0, 17.1 etc) support has been dropped!"
