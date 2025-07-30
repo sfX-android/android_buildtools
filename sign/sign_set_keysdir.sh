@@ -38,6 +38,7 @@ case $androidver in
     [aA]13) androidver=13 ;;
     [aA]14) androidver=14 ;;
     [aA]15) androidver=15 ;;
+    [aA]16) androidver=16 ;;
     *)
     echo "ERROR: Unknown android version specified! please use a7, a8, a9, ... (A7, A8, A9, ... will work, too) for a clear definition!"
     echo "Update your scripts and workflows which using this script as names (nougat, etc) and numbers (16.0, 17.1 etc) support has been dropped!"
@@ -73,9 +74,11 @@ if [ "$vendor" != "graphene" ];then
 		if [ $? -ne 0 ];then 
 		    sed -i "1s;^;PRODUCT_DEFAULT_DEV_CERTIFICATE := $tdir/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_DEFAULT_DEV_CERTIFICATE set"
 		fi
-		grep -q "PRODUCT_OTA_PUBLIC_KEYS := $tdir/releasekey" vendor/$vendor/config/common.mk
-		if [ $? -ne 0 ];then
-		    sed -i "1s;^;PRODUCT_OTA_PUBLIC_KEYS := $tdir/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_OTA_PUBLIC_KEYS set"
+		if [ "$normalizedver" -lt 15 ];then # causes duplicate which then leads to no fastboot zip
+		    grep -q "PRODUCT_OTA_PUBLIC_KEYS := $tdir/releasekey" vendor/$vendor/config/common.mk
+		    if [ $? -ne 0 ];then
+			sed -i "1s;^;PRODUCT_OTA_PUBLIC_KEYS := $tdir/releasekey\n;" vendor/$vendor/config/common.mk && echo "PRODUCT_OTA_PUBLIC_KEYS set"
+		    fi
 		fi
   	fi
 
