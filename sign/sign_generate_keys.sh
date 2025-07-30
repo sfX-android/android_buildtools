@@ -1,7 +1,7 @@
 #!/bin/bash
 #########################################################################################
 # 
-# Author & Copyright: 2020-2024 steadfasterX <steadfasterX | AT | gmail - DOT - com>
+# Author & Copyright: 2020-2025 steadfasterX <steadfasterX | AT | gmail - DOT - com>
 #
 # Generate all required keys for signing Android builds
 #
