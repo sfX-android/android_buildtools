@@ -9,8 +9,13 @@ from argparse import ArgumentParser
 
 # Spice up the output
 from colorama import init, deinit, Fore  # Back, Style
-from pygerrit2 import GerritRestAPI
 from pyperclip import copy
+
+# pygerrit2 dropped GerritRestAPI. The class was removed in v2.0.0 and replaced by pygerrit2.rest.GerritRestAPI.
+try:
+    from pygerrit2 import GerritRestAPI
+except ImportError:
+    from pygerrit2.rest import GerritRestAPI
 
 from xtrasforcherrypicker import BLACKLIST, UPSTREAM, WHITELIST
 
