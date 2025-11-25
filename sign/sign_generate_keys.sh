@@ -19,9 +19,10 @@ KEYS_SUBJECT='/C=US/ST=Somewhere/L=Somewhere/CN='${_USR}-${CERT_CN}'/OU=Android/
 # (e.g on pie external/avb/avbtool exists only but on A14 there's only external/avb/avbtool.py
 [ ! -x external/avb/avbtool ] && ln -s avbtool.py external/avb/avbtool
 
-# default key/hash sizes
+# defaults
 DEFKSIZE=4096
 DEFHASHTYPE=sha256
+: "${AVB_VERSION:=2}"
 
 [ ! -d $KEYS_DIR ] && mkdir -p $KEYS_DIR
 
@@ -53,6 +54,10 @@ for nc in $nlist;do
 	echo "enforce max hash algo to SHA256 for releasekey!"
 	echo "reason: build/make/tools/signapk/src/com/android/signapk/SignApk.java does not support anything else (atm)"
 	HASHTYPE=sha256 ${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
+    elif [ $nc == verity ] && [ "$KSIZE" != 2048 ] && [ "$AVB_VERSION" == 1 ];then
+	echo "enforce max keysize to 2048 bits for AVB v1 verity key!"
+	echo "reason: AVB v1 boot signing process does not support any higher key size!"
+	KSIZE=2048 ${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
     else
 	${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
     fi
@@ -69,8 +74,12 @@ done
 [ ! -f "$KEYS_DIR/releasekey.pem" ] && openssl rsa -inform DER -outform PEM -in $KEYS_DIR/releasekey.pk8 -out $KEYS_DIR/releasekey.pem && echo "... $KEYS_DIR/releasekey.pem created"
 [ ! -f "$KEYS_DIR/releasekey_OTA.pub" ] && openssl rsa -in $KEYS_DIR/releasekey.pem -pubout > $KEYS_DIR/releasekey_OTA.pub && echo "... $KEYS_DIR/releasekey_OTA.pub created"
 
+# Verity / Verified boot requires special handling
+[ ! -f "$KEYS_DIR/verity.pem" ] && openssl rsa -inform DER -outform PEM -in $KEYS_DIR/verity.pk8 -out $KEYS_DIR/verity.pem && echo "... $KEYS_DIR/verity.pem created"
+[ ! -f "$KEYS_DIR/verity_key.pub" ] && openssl rsa -in $KEYS_DIR/verity.pem -pubout > $KEYS_DIR/verity_key.pub && echo "... $KEYS_DIR/verity_key.pub created"
+
 # make AVB required stuff
-# AVB supports usually (atm) only sha256+4096bit max
+# AVB supports usually (atm) only sha512+4096bit MAX (this depends on the device's bootloader so might VARY!)
 for a in pk8;do
     if [ -f "$KEYS_DIR/avb.${a}" ];then
 	echo "WARNING: avb.${a} exists!! I WILL NOT OVERWRITE EXISTING KEYS!"
