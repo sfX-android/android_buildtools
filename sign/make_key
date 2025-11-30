@@ -71,7 +71,7 @@ else
 fi
 
 openssl req -new -x509 ${hash} -key ${two} -out $1.x509.pem \
-  -days 10000 -subj "$2" &
+  -days $CERT_DAYS -subj "$2" &
 
 if [ "${password}" == "" ]; then
   echo "creating ${1}.pk8 with no password"
