@@ -8,16 +8,31 @@
 #########################################################################################
 
 VENDOR_DIR=$(dirname $0)
-[ -z "$KEYS_DIR" ] && KEYS_DIR=user-keys
+: "${KEYS_DIR:=user-keys}"
+
 _USR=$USER_NAME
 [ -z $_USR ] && _USR=$BUILD_USERNAME
 [ -z $_USR ] && echo "ERROR: missing USER_NAME var!" && exit 3
-[ -z "$CERT_CN" ] && CERT_CN=aosp
-KEYS_SUBJECT='/C=US/ST=Somewhere/L=Somewhere/CN='${_USR}-${CERT_CN}'/OU=Android/O=Google/emailAddress=android@android.local'
+
+# set certificate defaults
+: "${CERT_DAYS:=10950}"
+: "${CERT_DAYS_VERITY:=10950}"	# note: AVB v1 devices MIGHT get in trouble if the default of 30 years is used, i.e. do not boot at all (e.g. dumpling)
+: "${CERT_CN:=aosp}"
+: "${CERT_C:=US}"
+: "${CERT_ST:=Somewhere}"
+: "${CERT_L:=Somewhere}"
+: "${CERT_OU:=Android}"
+: "${CERT_O:=Google}"
+: "${CERT_E:=android@android.local}"
+
+KEYS_SUBJECT="/C=${CERT_C}/ST=${CERT_ST}/L=${CERT_L}/CN=${CERT_CN}/OU=${CERT_OU}/O=${CERT_O}/emailAddress=${CERT_E}"
 
 # ensure avbtool binary path is set properly 
 # (e.g on pie external/avb/avbtool exists only but on A14 there's only external/avb/avbtool.py
 [ ! -x external/avb/avbtool ] && ln -s avbtool.py external/avb/avbtool
+
+# fail if mka generate_verity_key is missing
+which generate_verity_key || (echo "ERROR: missing generate_verity_key (run 'mka generate_verity_key')"; exit 4)
 
 # defaults
 DEFKSIZE=4096
@@ -54,13 +69,16 @@ for nc in $nlist;do
 	echo "enforce max hash algo to SHA256 for releasekey!"
 	echo "reason: build/make/tools/signapk/src/com/android/signapk/SignApk.java does not support anything else (atm)"
 	HASHTYPE=sha256 ${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
-    elif [ $nc == verity ] && [ "$KSIZE" != 2048 ] && [ "$AVB_VERSION" == 1 ];then
-	echo "enforce max keysize to 2048 bits for AVB v1 verity key!"
-	echo "reason: AVB v1 boot signing process does not support any higher key size!"
-	KSIZE=2048 ${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
-    else
-	${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
+	continue
+    elif [ $nc == verity ] && [ "$AVB_VERSION" == 1 ];then
+	echo "enforce special key handling. enforce sha256/2048bits for AVB v1 verity key!"
+	echo "reason: AVB v1 boot signing process does not support any other key size!"
+	# some bootloaders MIGHT don't like expire days long in the future, so if the signature is VALID
+	# but it still does not boot, test with other expire days!
+	CERT_DAYS=$CERT_DAYS_VERITY HASHTYPE=sha256 KSIZE=2048 ${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' #&> /dev/null
+	continue
     fi
+    ${VENDOR_DIR}/make_key "$KEYS_DIR/$nc" "$KEYS_SUBJECT" <<< '' &> /dev/null
 done
 
 for c in cyngn{-priv,}-app testkey; do
@@ -75,8 +93,23 @@ done
 [ ! -f "$KEYS_DIR/releasekey_OTA.pub" ] && openssl rsa -in $KEYS_DIR/releasekey.pem -pubout > $KEYS_DIR/releasekey_OTA.pub && echo "... $KEYS_DIR/releasekey_OTA.pub created"
 
 # Verity / Verified boot requires special handling
-[ ! -f "$KEYS_DIR/verity.pem" ] && openssl rsa -inform DER -outform PEM -in $KEYS_DIR/verity.pk8 -out $KEYS_DIR/verity.pem && echo "... $KEYS_DIR/verity.pem created"
-[ ! -f "$KEYS_DIR/verity_key.pub" ] && openssl rsa -in $KEYS_DIR/verity.pem -pubout > $KEYS_DIR/verity_key.pub && echo "... $KEYS_DIR/verity_key.pub created"
+# the specs allow only sha256/2048bit max!
+if [ "$AVB_VERSION" == 1 ];then
+    echo "verity: special AVB v1 handling ..."
+    [ ! -f "$KEYS_DIR/verity.pem" ] \
+	&& openssl genrsa -f4 -out $KEYS_DIR/verity.pem 2048 \
+	&& echo "... $KEYS_DIR/verity.pem created"
+    [ ! -f "$KEYS_DIR/verity.x509.der" ] \
+	&& openssl x509 -in $KEYS_DIR/verity.x509.pem -outform DER -out $KEYS_DIR/verity.x509.der \
+	&& echo "... $KEYS_DIR/verity.x509.der created"
+    [ ! -L "$KEYS_DIR/verifiedboot_relkeys.der.x509" ] \
+	&& ln -s verity.x509.der $KEYS_DIR/verifiedboot_relkeys.der.x509 \
+	&& echo "... linked $KEYS_DIR/verifiedboot_relkeys.der.x509 to verity.x509.der"
+    [ ! -f "$KEYS_DIR/verity_key" ] \
+	&& generate_verity_key -convert $KEYS_DIR/verity.x509.pem $KEYS_DIR/verity_key \
+	&& mv $KEYS_DIR/verity_key.pub $KEYS_DIR/verity_key \
+	&& echo "... $KEYS_DIR/verity_key created"
+fi
 
 # make AVB required stuff
 # AVB supports usually (atm) only sha512+4096bit MAX (this depends on the device's bootloader so might VARY!)
