@@ -27,6 +27,8 @@ _USR=$USER_NAME
 
 KEYS_SUBJECT="/C=${CERT_C}/ST=${CERT_ST}/L=${CERT_L}/CN=${CERT_CN}/OU=${CERT_OU}/O=${CERT_O}/emailAddress=${CERT_E}"
 
+export CERT_DAYS
+
 # ensure avbtool binary path is set properly 
 # (e.g on pie external/avb/avbtool exists only but on A14 there's only external/avb/avbtool.py
 [ ! -x external/avb/avbtool ] && ln -s avbtool.py external/avb/avbtool
