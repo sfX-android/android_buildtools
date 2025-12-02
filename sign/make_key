@@ -59,6 +59,11 @@ case $HASHTYPE in
     *) echo "UNSUPPORTED or empty hash >$HASHTYPE<" ; exit 3 ;;
 esac
 
+if [ -z "$CERT_DAYS" ]; then
+    echo "ERROR: missing CERT_DAYS variable!"
+    exit 4
+fi
+
 if [ "${3}" = "rsa" -o "$#" -eq 2 ]; then
   ( openssl genrsa -f4 $KSIZE | tee ${one} > ${two} ) &
   hash="-${HASHTYPE}"
