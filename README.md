@@ -5,6 +5,10 @@ My build tools for developing android
 
 check the [README](https://github.com/sfX-android/android_buildtools/tree/main/sign) in that directory 
 
+### sdat2img.py
+
+system.new.dat converter, check its [README](README-sdat2img.md)
+
 ### blobs.sh
 
 THE tool to find blob dependencies! Ever tried to bring-up a custom ROM for a device? you WILL get trouble to get everything working without proprietary (aka blobs) binaries from the STOCK ROM. as these have dependencies with libraries you can easily come into a situation where you need to grab 10 libs for 1 blob. finding these is always annoying as you either need to grab the logs again and again or using strace again and again.
